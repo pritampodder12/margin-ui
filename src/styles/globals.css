@@ -1,0 +1,181 @@
+/**
+ * Margin Resume Builder - Global Styles
+ * Preserving the original visual design exactly
+ */
+
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   CSS CUSTOM PROPERTIES (FROM ORIGINAL DESIGN)
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Original color palette */
+  --paper: #F6F4EE;
+  --paper-alt: #ECE9DF;
+  --card: #FCFBF8;
+  --ink: #17181C;
+  --ink-soft: #55575E;
+  --ink-faint: #92918B;
+  --rule: #DBD7CA;
+  --rule-strong: #C7C2B2;
+  --red: #B93E28;
+  --red-soft: #F2DED7;
+  --green: #1F6E4A;
+  --green-soft: #DCEBE1;
+  --amber: #9C6B14;
+  --amber-soft: #F2E6CC;
+  --radius-sm: 3px;
+  --radius-md: 6px;
+  --maxw: 1180px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   BASE RESETS
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+}
+
+img,
+svg {
+  display: block;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   TYPOGRAPHY
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+h1,
+h2,
+h3 {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  line-height: 1.08;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+em {
+  font-style: italic;
+  font-weight: 450;
+  color: var(--red);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   UTILITY CLASSES (PRESERVED FROM ORIGINAL)
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.wrap {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--red);
+  font-weight: 500;
+}
+
+.eyebrow.alt {
+  color: var(--ink-faint);
+}
+
+.mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   REVEAL ON SCROLL ANIMATION
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.reveal.in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   SCROLLBAR STYLING
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--rule-strong);
+  border-radius: 8px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   KEYFRAME ANIMATIONS (FROM ORIGINAL)
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+@keyframes annotIn {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .annot {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 600px) {
+  .wrap {
+    padding: 0 20px;
+  }
+}
