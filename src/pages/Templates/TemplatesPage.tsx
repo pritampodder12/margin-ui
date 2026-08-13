@@ -1,16 +1,18 @@
 /**
  * Templates Page
- * Matches original design exactly
+ * Functional template selection with navigation to editor
  */
 
 import * as React from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { DashboardNavbar, SimpleFooter } from '@/layouts/RootLayout/components';
 import { Container } from '@/components/ui/container';
 import { Heading, Eyebrow } from '@/components/ui/typography';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/cn';
+import { resumeStore } from '@/stores';
+import type { TemplateId } from '@/stores';
 
 // Template thumbnail variants
 const ThumbnailVariant = ({
@@ -136,19 +138,26 @@ const TemplateCard = ({
   name,
   description,
   variant,
+  onSelect,
+  isSelected,
 }: {
   name: string;
   description: string;
   variant: 'single' | 'sidebar' | 'timeline' | 'compact' | 'right-rail' | 'header' | 'dense';
+  onSelect: () => void;
+  isSelected?: boolean;
 }) => (
   <div
+    onClick={onSelect}
     className={cn(
-      'bg-[var(--card)] border border-[var(--rule)] rounded-[var(--radius-md)] p-[18px]',
+      'bg-[var(--card)] border rounded-[var(--radius-md)] p-[18px]',
       'transition-all duration-200',
       'hover:translate-y-[-4px]',
       'hover:shadow-[0_18px_30px_-20px_rgba(23,24,28,0.35)]',
-      'hover:border-[var(--rule-strong)]',
-      'cursor-pointer'
+      'cursor-pointer',
+      isSelected
+        ? 'border-[var(--red)] shadow-[0_0_0_2px_rgba(185,62,40,0.15)]'
+        : 'border-[var(--rule)] hover:border-[var(--rule-strong)]'
     )}
   >
     <div className="bg-[var(--paper-alt)] border border-[var(--rule)] rounded-[3px] h-[170px] p-3.5 mb-4 overflow-hidden">
@@ -156,6 +165,11 @@ const TemplateCard = ({
     </div>
     <div className="font-['Fraunces'] font-semibold text-[1.05rem] mb-1">
       {name}
+      {isSelected && (
+        <span className="ml-2 font-['JetBrains_Mono'] text-[0.6rem] bg-[var(--red-soft)] text-[var(--red)] px-2 py-0.5 rounded-[20px]">
+          SELECTED
+        </span>
+      )}
     </div>
     <div className="text-[0.82rem] text-[var(--ink-soft)] mb-3.5">
       {description}
@@ -164,31 +178,43 @@ const TemplateCard = ({
       <Badge variant="green" size="default">
         ATS-safe
       </Badge>
-      <Link to="/editor">
-        <Button variant="outline" size="xs">
-          Use template
-        </Button>
-      </Link>
+      <Button
+        variant={isSelected ? 'primary' : 'outline'}
+        size="xs"
+        onClick={(e) => {
+          e.stopPropagation();
+          onSelect();
+        }}
+      >
+        {isSelected ? 'Selected' : 'Use template'}
+      </Button>
     </div>
   </div>
 );
 
 const TemplatesPage: React.FC = () => {
+  const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = React.useState('All');
+  const [selectedTemplate, setSelectedTemplate] = React.useState<TemplateId>('ledger');
 
   const filters = ['All', 'Minimal', 'Executive', 'Creative', 'Technical', 'ATS-safe'];
 
+  // Map template IDs to display variants
   const templates = [
-    { name: 'Northline', description: 'Left sidebar for contact and skills, main column for experience.', variant: 'sidebar' as const },
-    { name: 'Fieldnote', description: "A left rule marks the timeline — good for long, varied career histories.", variant: 'timeline' as const },
-    { name: 'Bracket', description: 'Compact spacing fits more on one page without feeling crowded.', variant: 'compact' as const },
-    { name: 'Compass', description: 'Skills and education sit in a right rail, out of the reading path.', variant: 'right-rail' as const },
-    { name: 'Studio', description: 'A bolder header for portfolio-driven roles — design, writing, media.', variant: 'header' as const },
-    { name: 'Fieldbook', description: 'Dense and text-forward, built for technical and research roles.', variant: 'dense' as const },
-    { name: 'Almanac', description: 'Sidebar photo block and a traditional layout for executive roles.', variant: 'sidebar' as const },
-    { name: 'Foreword', description: 'Wide margins and a serif header for a quieter, editorial feel.', variant: 'header' as const },
-    { name: 'Roster', description: 'Built for career changers — leads with skills before the timeline.', variant: 'timeline' as const },
+    { id: 'ledger' as const, name: 'Ledger', description: 'Clean single-column layout with generous spacing. Perfect for any industry.', variant: 'single' as const },
+    { id: 'northline' as const, name: 'Northline', description: 'Left sidebar for contact and skills, main column for experience.', variant: 'sidebar' as const },
+    { id: 'compass' as const, name: 'Compass', description: 'Skills and education sit in a right rail, out of the reading path.', variant: 'right-rail' as const },
   ];
+
+  const handleSelectTemplate = (templateId: TemplateId) => {
+    setSelectedTemplate(templateId);
+    resumeStore.setTemplate(templateId);
+  };
+
+  const handleUseTemplate = () => {
+    resumeStore.setTemplate(selectedTemplate);
+    navigate('/editor');
+  };
 
   return (
     <div className="min-h-screen bg-[var(--paper)] flex flex-col">
@@ -220,9 +246,12 @@ const TemplatesPage: React.FC = () => {
             ))}
           </div>
 
-          {/* Spotlight Card */}
+          {/* Spotlight Card - Featured Template */}
           <div className="grid grid-cols-[1fr_1.3fr] gap-10 items-center bg-[var(--card)] border border-[var(--rule-strong)] rounded-[var(--radius-md)] p-8.5 mb-13 max-lg:grid-cols-1">
-            <div className="bg-[var(--paper-alt)] border border-[var(--rule)] rounded-[4px] h-[220px] p-5">
+            <div className={cn(
+              "bg-[var(--paper-alt)] border rounded-[4px] h-[220px] p-5",
+              selectedTemplate === 'ledger' && "border-[var(--red)]"
+            )}>
               <div className="h-[14px] w-[45%] bg-[var(--ink)] opacity-75 rounded-[2px] mb-4" />
               <div className="h-[6px] w-[90%] bg-[var(--rule-strong)] rounded-[2px]" />
               <div className="h-[6px] w-[70%] bg-[var(--rule-strong)] rounded-[2px] mt-2" />
@@ -242,23 +271,63 @@ const TemplatesPage: React.FC = () => {
                 breaks. Built for parsers that read top to bottom — nothing to trip
                 over.
               </p>
-              <Link to="/editor">
-                <Button variant="primary">Use this template</Button>
-              </Link>
+              <div className="flex gap-3">
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    handleSelectTemplate('ledger');
+                    navigate('/editor');
+                  }}
+                >
+                  Use this template
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => handleSelectTemplate('ledger')}
+                >
+                  Preview
+                </Button>
+              </div>
             </div>
           </div>
 
-          {/* Templates Grid */}
-          <div className="grid grid-cols-3 gap-6 pb-[90px] max-lg:grid-cols-2 max-xs:grid-cols-1">
-            {templates.map((template) => (
-              <TemplateCard
-                key={template.name}
-                name={template.name}
-                description={template.description}
-                variant={template.variant}
-              />
-            ))}
+          {/* Template Grid */}
+          <div className="pb-20">
+            <h2 className="font-['Fraunces'] font-semibold text-[1.4rem] mb-6">
+              All templates
+            </h2>
+            <div className="grid grid-cols-3 gap-5.5 max-lg:grid-cols-2 max-xs:grid-cols-1">
+              {templates.map((template) => (
+                <TemplateCard
+                  key={template.id}
+                  name={template.name}
+                  description={template.description}
+                  variant={template.variant}
+                  isSelected={selectedTemplate === template.id}
+                  onSelect={() => handleSelectTemplate(template.id)}
+                />
+              ))}
+            </div>
           </div>
+
+          {/* Fixed bottom bar when template selected */}
+          {selectedTemplate && (
+            <div className="fixed bottom-0 left-0 right-0 bg-[var(--card)] border-t border-[var(--rule)] py-4 px-6 shadow-lg z-10">
+              <Container>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-[var(--ink-soft)] text-[0.85rem]">Selected template:</span>
+                    <span className="font-['Fraunces'] font-semibold text-[1.1rem] ml-2 capitalize">
+                      {selectedTemplate}
+                    </span>
+                  </div>
+                  <Button variant="primary" onClick={handleUseTemplate}>
+                    Continue with this template
+                  </Button>
+                </div>
+              </Container>
+            </div>
+          )}
         </Container>
       </main>
 

@@ -4,6 +4,8 @@
  * Using custom hooks with a singleton store
  */
 
+import * as React from 'react';
+
 export interface PersonalInfo {
   fullName: string;
   email: string;
@@ -33,13 +35,15 @@ export interface Education {
   endDate: string;
 }
 
+export type TemplateId = 'ledger' | 'northline' | 'compass';
+
 export interface ResumeData {
   personalInfo: PersonalInfo;
   summary: string;
   experience: Experience[];
   education: Education[];
   skills: string[];
-  templateId: string;
+  templateId: TemplateId;
 }
 
 // Generate unique ID
@@ -70,7 +74,7 @@ const dummyParsedResume: ResumeData = {
     location: 'Chicago, IL',
     linkedin: 'linkedin.com/in/jordanavery',
   },
-  summary: 'Product designer with 8 years building consumer software, focused on checkout and onboarding flows. Led design for three products from zero to launch.',
+  summary: 'Product designer with 8 years building consumer software, focused on checkout and onboarding flows. Led design for three products from zero to launch. Passionate about creating intuitive user experiences that drive business results.',
   experience: [
     {
       id: generateId(),
@@ -82,8 +86,9 @@ const dummyParsedResume: ResumeData = {
       current: true,
       bullets: [
         'Redesigned checkout flow, lifting conversion 18% in six weeks.',
-        'Responsible for team communications and reporting.',
+        'Led cross-functional team of 4 designers and 6 engineers to deliver new onboarding experience.',
         'Ran weekly research sessions that shaped the 2023 onboarding rebuild.',
+        'Established design system components that reduced development time by 40%.',
       ],
     },
     {
@@ -97,6 +102,22 @@ const dummyParsedResume: ResumeData = {
       bullets: [
         'Shipped the design system now used across 4 product teams.',
         'Partnered with engineering to cut design-to-ship time by 30%.',
+        'Conducted user interviews with 50+ customers to inform product roadmap.',
+        'Designed and prototyped mobile-first experiences for 2M+ active users.',
+      ],
+    },
+    {
+      id: generateId(),
+      title: 'Junior Designer',
+      company: 'Creative Studio Inc.',
+      location: 'Columbus, OH',
+      startDate: '2017',
+      endDate: '2019',
+      current: false,
+      bullets: [
+        'Created visual designs for web and mobile applications.',
+        'Collaborated with senior designers on brand identity projects.',
+        'Produced marketing materials that increased client engagement by 25%.',
       ],
     },
   ],
@@ -106,11 +127,11 @@ const dummyParsedResume: ResumeData = {
       degree: 'B.A. Graphic Design',
       school: 'Ohio State University',
       location: 'Columbus, OH',
-      startDate: '2015',
-      endDate: '2019',
+      startDate: '2013',
+      endDate: '2017',
     },
   ],
-  skills: ['Figma', 'Design Systems', 'User Research', 'Prototyping', 'SQL', 'A/B Testing'],
+  skills: ['Figma', 'Design Systems', 'User Research', 'Prototyping', 'SQL', 'A/B Testing', 'React', 'TypeScript', 'Accessibility'],
   templateId: 'ledger',
 };
 
@@ -221,7 +242,7 @@ class ResumeStore {
     this.listeners.forEach(listener => listener());
   };
 
-  setTemplate = (templateId: string) => {
+  setTemplate = (templateId: TemplateId) => {
     this.data = { ...this.data, templateId };
     this.listeners.forEach(listener => listener());
   };
@@ -235,12 +256,6 @@ class ResumeStore {
   parseFromFile = async (file: File): Promise<ResumeData> => {
     // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 1500));
-
-    // In real implementation, this would call your API
-    // const formData = new FormData();
-    // formData.append('file', file);
-    // const response = await fetch('/api/parse-resume', { method: 'POST', body: formData });
-    // return response.json();
 
     console.log('Parsed file:', file.name);
     return { ...dummyParsedResume };
@@ -262,5 +277,3 @@ export function useResumeStore(): ResumeData {
 
   return data;
 }
-
-import * as React from 'react';

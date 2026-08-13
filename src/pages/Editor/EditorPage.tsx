@@ -9,8 +9,10 @@ import { Logo } from '@/components/common/Logo';
 import { Button } from '@/components/ui/button';
 import { Eyebrow } from '@/components/ui/typography';
 import { cn } from '@/lib/cn';
-import { ArrowLeft, Plus, X } from 'lucide-react';
+import { ArrowLeft, Plus, X, Loader2 } from 'lucide-react';
 import { useResumeStore, resumeStore } from '@/stores';
+import { SaveSuccessDialog } from '@/components/dialogs';
+import { usePDFExport } from '@/hooks';
 import type { Experience, Education } from '@/stores';
 
 // Section nav item
@@ -460,6 +462,7 @@ const EditorPage: React.FC = () => {
   const data = useResumeStore();
   const [activeSection, setActiveSection] = React.useState('Experience');
   const [saveStatus, setSaveStatus] = React.useState<'saved' | 'saving'>('saved');
+  const { isGenerating, downloadPDF } = usePDFExport();
 
   // Sections with counts
   const sections = [
@@ -519,6 +522,36 @@ const EditorPage: React.FC = () => {
     resumeStore.updateSkills(data.skills.filter((_, i) => i !== index));
   };
 
+  // Save state
+  const [isSaving, setIsSaving] = React.useState(false);
+  const [showSaveSuccess, setShowSaveSuccess] = React.useState(false);
+
+  // Handle save
+  const handleSave = async () => {
+    setIsSaving(true);
+    setSaveStatus('saving');
+
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1200));
+
+    // Mock successful save
+    setIsSaving(false);
+    setSaveStatus('saved');
+    setShowSaveSuccess(true);
+
+    // In real app, would call:
+    // const response = await fetch('/api/resumes/save', {
+    //   method: 'POST',
+    //   body: JSON.stringify(data)
+    // });
+  };
+
+  // Handle export
+  const handleExport = async () => {
+    setShowSaveSuccess(false);
+    await downloadPDF(data);
+  };
+
   return (
     <div className="h-screen bg-[var(--paper)] flex flex-col">
       {/* Top Bar */}
@@ -549,8 +582,35 @@ const EditorPage: React.FC = () => {
               Switch template
             </Button>
           </Link>
-          <Button variant="primary" size="xs">
-            Export PDF
+          <Button
+            variant="outline"
+            size="xs"
+            disabled={isGenerating}
+            onClick={handleExport}
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
+                Exporting...
+              </>
+            ) : (
+              'Export'
+            )}
+          </Button>
+          <Button
+            variant="primary"
+            size="xs"
+            disabled={isSaving}
+            onClick={handleSave}
+          >
+            {isSaving ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
+                Saving...
+              </>
+            ) : (
+              'Save'
+            )}
           </Button>
         </div>
       </header>
@@ -797,6 +857,14 @@ const EditorPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Save Success Dialog */}
+      <SaveSuccessDialog
+        isOpen={showSaveSuccess}
+        onClose={() => setShowSaveSuccess(false)}
+        resumeName={data.personalInfo.fullName || 'Untitled Resume'}
+        onExport={handleExport}
+      />
     </div>
   );
 };
