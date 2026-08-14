@@ -4,7 +4,7 @@
  */
 
 import * as React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Logo } from '@/components/common/Logo';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/cn';
@@ -67,9 +67,11 @@ const Navbar = React.forwardRef<HTMLElement, NavbarProps>(
 
           {rightContent || (
             showCTA && (
-              <Button variant="primary" size="sm">
-                Try Margin free
-              </Button>
+              <Link to="/dashboard">
+                <Button variant="primary" size="sm">
+                  Try Margin free
+                </Button>
+              </Link>
             )
           )}
         </nav>
@@ -86,6 +88,8 @@ const DashboardNavbar = React.forwardRef<
     links?: NavLink[];
   }
 >((_props, ref) => {
+  const location = useLocation();
+
   const dashboardLinks: NavLink[] = [
     { label: 'Dashboard', href: '/dashboard', isActive: true },
     { label: 'Templates', href: '/templates' },
@@ -112,7 +116,9 @@ const DashboardNavbar = React.forwardRef<
         <Logo href="/" />
 
         <div className="flex gap-[30px] items-center max-md:hidden">
-          {dashboardLinks.map((link) => (
+          {dashboardLinks.map((link) => {
+            const isActive = location.pathname === link.href;
+            return (
             <Link
               key={link.href}
               to={link.href}
@@ -121,13 +127,14 @@ const DashboardNavbar = React.forwardRef<
                 'pb-1 border-b-2 border-transparent',
                 'transition-all duration-200',
                 'hover:text-[var(--ink)]',
-                link.isActive &&
+                isActive &&
                   '!text-[var(--ink)] border-[var(--red)] font-semibold'
               )}
             >
               {link.label}
             </Link>
-          ))}
+          )
+          })}
         </div>
 
         <div className="flex items-center gap-4">

@@ -4,7 +4,9 @@
  * Using custom hooks with a singleton store
  */
 
+import apiService from '@/lib/http/ApiService';
 import * as React from 'react';
+import type { ParsedResumeData } from '@/types/resume';
 
 export interface PersonalInfo {
   fullName: string;
@@ -65,91 +67,70 @@ const defaultResume: ResumeData = {
   templateId: 'ledger',
 };
 
-// Dummy parsed resume data (simulating PDF parse result)
-const dummyParsedResume: ResumeData = {
-  personalInfo: {
-    fullName: 'Jordan Avery',
-    email: 'jordan@email.com',
-    phone: '(312) 555-0147',
-    location: 'Chicago, IL',
-    linkedin: 'linkedin.com/in/jordanavery',
-  },
-  summary: 'Product designer with 8 years building consumer software, focused on checkout and onboarding flows. Led design for three products from zero to launch. Passionate about creating intuitive user experiences that drive business results.',
-  experience: [
-    {
-      id: generateId(),
-      title: 'Lead Product Designer',
-      company: 'Northwind Co.',
-      location: 'Chicago, IL',
-      startDate: '2022',
-      endDate: 'Present',
-      current: true,
-      bullets: [
-        'Redesigned checkout flow, lifting conversion 18% in six weeks.',
-        'Led cross-functional team of 4 designers and 6 engineers to deliver new onboarding experience.',
-        'Ran weekly research sessions that shaped the 2023 onboarding rebuild.',
-        'Established design system components that reduced development time by 40%.',
-      ],
+// The API sends this literal placeholder instead of omitting empty fields
+const NA = 'N/A';
+const cleanField = (value: string): string => (value === NA ? '' : value);
+
+/**
+ * Maps the backend's ParsedResumeData (see @/types/resume.ts) onto the
+ * frontend's ResumeData shape. Pure function — no store/React deps —
+ * so it's easy to unit test in isolation.
+ */
+export function mapParsedResumeToResumeData(parsed: ParsedResumeData): ResumeData {
+  return {
+    personalInfo: {
+      fullName: parsed.candidateName,
+      email: '',   // not present in the parse response — user fills in
+      phone: '',   // not present in the parse response — user fills in
+      location: cleanField(parsed.experience[0]?.location ?? ''),
+      linkedin: '',
     },
-    {
+    summary: parsed.objective,
+    experience: parsed.experience.map(exp => ({
       id: generateId(),
-      title: 'Product Designer',
-      company: 'Fielding Labs',
-      location: 'Remote',
-      startDate: '2019',
-      endDate: '2022',
-      current: false,
-      bullets: [
-        'Shipped the design system now used across 4 product teams.',
-        'Partnered with engineering to cut design-to-ship time by 30%.',
-        'Conducted user interviews with 50+ customers to inform product roadmap.',
-        'Designed and prototyped mobile-first experiences for 2M+ active users.',
-      ],
-    },
-    {
+      title: exp.position,
+      company: exp.companyName,
+      location: cleanField(exp.location),
+      startDate: exp.startDate,
+      endDate: exp.endDate,
+      current: exp.current,
+      bullets: exp.description.filter(line => line !== NA),
+    })),
+    education: parsed.education.map(edu => ({
       id: generateId(),
-      title: 'Junior Designer',
-      company: 'Creative Studio Inc.',
-      location: 'Columbus, OH',
-      startDate: '2017',
-      endDate: '2019',
-      current: false,
-      bullets: [
-        'Created visual designs for web and mobile applications.',
-        'Collaborated with senior designers on brand identity projects.',
-        'Produced marketing materials that increased client engagement by 25%.',
-      ],
-    },
-  ],
-  education: [
-    {
-      id: generateId(),
-      degree: 'B.A. Graphic Design',
-      school: 'Ohio State University',
-      location: 'Columbus, OH',
-      startDate: '2013',
-      endDate: '2017',
-    },
-  ],
-  skills: ['Figma', 'Design Systems', 'User Research', 'Prototyping', 'SQL', 'A/B Testing', 'React', 'TypeScript', 'Accessibility'],
-  templateId: 'ledger',
-};
+      degree: edu.fieldOfStudy ? `${edu.degree}, ${edu.fieldOfStudy}` : edu.degree,
+      school: edu.institutionName,
+      location: cleanField(edu.location),
+      startDate: edu.startDate,
+      endDate: edu.endDate,
+    })),
+    skills: parsed.skills.map(skill => skill.name),
+    templateId: 'ledger', // API's templateName ("modern") doesn't map to a TemplateId — default until templates are aligned
+  };
+}
 
 // Singleton store
 class ResumeStore {
   private data: ResumeData = { ...defaultResume };
   private listeners: Set<() => void> = new Set();
+  private parseError: string | null = null;
 
   getSnapshot = (): ResumeData => this.data;
+
+  getParseError = (): string | null => this.parseError;
 
   subscribe = (listener: () => void): (() => void) => {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
   };
 
+  private notify = () => {
+    this.listeners.forEach(listener => listener());
+  };
+
   setData = (data: ResumeData) => {
     this.data = { ...data };
-    this.listeners.forEach(listener => listener());
+    this.notify();
   };
 
   updatePersonalInfo = (info: Partial<PersonalInfo>) => {
@@ -157,12 +138,12 @@ class ResumeStore {
       ...this.data,
       personalInfo: { ...this.data.personalInfo, ...info },
     };
-    this.listeners.forEach(listener => listener());
+    this.notify();
   };
 
   updateSummary = (summary: string) => {
     this.data = { ...this.data, summary };
-    this.listeners.forEach(listener => listener());
+    this.notify();
   };
 
   addExperience = (exp?: Partial<Experience>) => {
@@ -181,7 +162,7 @@ class ResumeStore {
       ...this.data,
       experience: [...this.data.experience, newExp],
     };
-    this.listeners.forEach(listener => listener());
+    this.notify();
   };
 
   updateExperience = (id: string, updates: Partial<Experience>) => {
@@ -191,7 +172,7 @@ class ResumeStore {
         exp.id === id ? { ...exp, ...updates } : exp
       ),
     };
-    this.listeners.forEach(listener => listener());
+    this.notify();
   };
 
   removeExperience = (id: string) => {
@@ -199,7 +180,7 @@ class ResumeStore {
       ...this.data,
       experience: this.data.experience.filter(exp => exp.id !== id),
     };
-    this.listeners.forEach(listener => listener());
+    this.notify();
   };
 
   addEducation = (edu?: Partial<Education>) => {
@@ -216,7 +197,7 @@ class ResumeStore {
       ...this.data,
       education: [...this.data.education, newEdu],
     };
-    this.listeners.forEach(listener => listener());
+    this.notify();
   };
 
   updateEducation = (id: string, updates: Partial<Education>) => {
@@ -226,7 +207,7 @@ class ResumeStore {
         edu.id === id ? { ...edu, ...updates } : edu
       ),
     };
-    this.listeners.forEach(listener => listener());
+    this.notify();
   };
 
   removeEducation = (id: string) => {
@@ -234,31 +215,39 @@ class ResumeStore {
       ...this.data,
       education: this.data.education.filter(edu => edu.id !== id),
     };
-    this.listeners.forEach(listener => listener());
+    this.notify();
   };
 
   updateSkills = (skills: string[]) => {
     this.data = { ...this.data, skills };
-    this.listeners.forEach(listener => listener());
+    this.notify();
   };
 
   setTemplate = (templateId: TemplateId) => {
     this.data = { ...this.data, templateId };
-    this.listeners.forEach(listener => listener());
+    this.notify();
   };
 
   reset = () => {
     this.data = { ...defaultResume };
-    this.listeners.forEach(listener => listener());
+    this.parseError = null;
+    this.notify();
   };
 
-  // Simulate PDF parsing
   parseFromFile = async (file: File): Promise<ResumeData> => {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    this.parseError = null;
 
-    console.log('Parsed file:', file.name);
-    return { ...dummyParsedResume };
+    const [response, error] = await apiService.parsePdf(file);
+
+    if (error || !response?.data) {
+      this.parseError = 'Could not parse this resume. Please try a different file.';
+      this.notify();
+      throw error ?? new Error('parse-pdf returned no data');
+    }
+
+    const mapped = mapParsedResumeToResumeData(response.data);
+    this.setData(mapped);
+    return mapped;
   };
 }
 

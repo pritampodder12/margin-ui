@@ -147,6 +147,86 @@ export interface ResumeMetadata {
   exportCount: number;
 }
 
+// src/types/resume.ts
+
+export interface ParsedEducation {
+  institutionName: string;
+  degree: string;
+  fieldOfStudy: string;
+  location: string;
+  startDate: string;      // ISO date string, e.g. "2017-01-01"
+  endDate: string;        // ISO date string, or "N/A"
+  current: boolean;
+  gpa: string;             // "N/A" when not present
+  description: string[];
+}
+
+export interface ParsedExperience {
+  companyName: string;
+  position: string;
+  location: string;
+  employmentType: string;  // "N/A" when not present
+  startDate: string;
+  endDate: string;         // ISO date string, or "Present"
+  current: boolean;
+  description: string[];
+  highlights: string;      // "N/A" when not present
+  sortOrder: number;
+}
+
+export interface ParsedCertification {
+  name: string;
+  issuingOrganization: string;
+  credentialId: string;
+  credentialUrl: string;
+  issueDate: string;
+  expirationDate: string;  // "N/A" when not present
+  doesNotExpire: boolean;
+  description: string[];
+  sortOrder: number;
+}
+
+export interface ParsedProject {
+  name: string;
+  description: string[];
+  technologies: string;    // comma-separated in the raw response
+  projectUrl: string;
+  githubUrl: string;
+  startDate: string;
+  endDate: string;
+  current: boolean;
+  sortOrder: number;
+}
+
+export interface ParsedSkill {
+  name: string;
+  category: string;
+  proficiencyLevel: number;  // 0–100
+  yearsOfExperience: number;
+  description: string[];
+  sortOrder: number;
+}
+
+export interface ParsedResumeData {
+  candidateName: string;
+  title: string;
+  objective: string;
+  templateName: string;
+  education: ParsedEducation[];
+  experience: ParsedExperience[];
+  certifications: ParsedCertification[];
+  projects: ParsedProject[];
+  skills: ParsedSkill[];
+}
+
+// The full API envelope returned by POST /resumes/parse-pdf
+export interface ParsePdfResponse {
+  success: boolean;
+  message: string;
+  data: ParsedResumeData;
+  timestamp: string; // ISO datetime
+}
+
 // ═══════════════════════════════════════════════════════════════
 // RESUME INPUT TYPES (for forms)
 // ═══════════════════════════════════════════════════════════════
