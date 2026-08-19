@@ -11,8 +11,8 @@ import { Heading, Eyebrow } from '@/components/ui/typography';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/cn';
-import { resumeStore } from '@/stores';
-import type { TemplateId } from '@/stores';
+import { resumeStore } from '@/store';
+import type { TemplateId } from '@/store';
 
 // Template thumbnail variants
 const ThumbnailVariant = ({

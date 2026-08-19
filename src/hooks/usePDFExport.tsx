@@ -6,7 +6,7 @@
 import * as React from 'react';
 import { pdf } from '@react-pdf/renderer';
 import { LedgerPDF, NorthlinePDF, CompassPDF } from '@/pdf/templates';
-import type { ResumeData, TemplateId } from '@/stores';
+import type { ResumeData, TemplateId } from '@/store';
 
 interface UsePDFExportReturn {
   isGenerating: boolean;

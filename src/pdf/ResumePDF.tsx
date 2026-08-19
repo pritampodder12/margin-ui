@@ -10,7 +10,7 @@ import {
   View,
   StyleSheet,
 } from '@react-pdf/renderer';
-import type { ResumeData } from '@/stores';
+import type { ResumeData } from '@/store';
 
 // Register fonts (using built-in fonts for simplicity)
 // In production, you'd register custom fonts like Fraunces, Inter, JetBrains Mono

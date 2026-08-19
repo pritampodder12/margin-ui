@@ -10,7 +10,7 @@ import {
   View,
   StyleSheet,
 } from '@react-pdf/renderer';
-import type { ResumeData } from '@/stores';
+import type { ResumeData } from '@/store';
 
 // Colors matching CSS variables
 const colors = {

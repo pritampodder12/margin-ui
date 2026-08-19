@@ -11,10 +11,17 @@ import { Eyebrow, Heading } from '@/components/ui/typography';
 import { Button } from '@/components/ui/button';
 import { ResumeCard, NewResumeCard } from '@/components/cards';
 import { ImportDialog } from '@/components/dialogs';
-import { resumeStore } from '@/stores';
+// import { resumeStore } from '@/store';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { parseResumeFromFile } from '@/store/resumeSlice';
 
 const DashboardPage: React.FC = () => {
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  // const parseError = useAppSelector(state => state.resume.parseError);
+  // const parseStatus = useAppSelector(state => state.resume.parseStatus);
+  // const {data: resumeData} = useAppSelector(state => state.resume);
+
   const [isImportOpen, setIsImportOpen] = React.useState(false);
 
   // Dummy resume data for display
@@ -50,14 +57,15 @@ const DashboardPage: React.FC = () => {
 
   // Handle file import
   const handleImport = async (file: File) => {
-    const data = await resumeStore.parseFromFile(file);
-    resumeStore.setData(data);
+    await dispatch(parseResumeFromFile(file));
+    // const data = await resumeStore.parseFromFile(file);
+    // resumeStore.setData(data);
     navigate('/editor');
   };
 
   // Handle start blank
   const handleStartBlank = () => {
-    resumeStore.reset();
+    // resumeStore.reset();
     navigate('/editor');
   };
 

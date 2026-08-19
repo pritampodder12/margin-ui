@@ -13,9 +13,9 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import { SaveSuccessDialog } from '@/components/dialogs';
 import { usePDFExport } from '@/hooks';
 import { useAppSelector } from '@/store/hooks';
-import { SectionNav, type SectionInfo } from './components/SectionNav';
-import { ResumePreview } from './components/ResumePreview';
-import { InsightsPanel } from './components/InsightsPanel';
+import { SectionNav, type SectionInfo } from '@/features/resume-editor/components/SectionNav';
+import { ResumePreview } from '@/features/resume-editor/components/ResumePreview';
+import { InsightsPanel } from '@/features/resume-editor/components/InsightsPanel';
 
 const EditorPage: React.FC = () => {
   const { data } = useAppSelector((state) => state.resume);
@@ -24,7 +24,7 @@ const EditorPage: React.FC = () => {
   const { isGenerating, downloadPDF } = usePDFExport();
 
   const sections: SectionInfo[] = [
-    // { label: 'Contact', count: Object.values(data?.contact).filter(Boolean).length },
+    { label: 'Contact', count: Object.values(data.contact).filter(Boolean).length },
     { label: 'Summary', count: data.objective ? 1 : 0 },
     { label: 'Experience', count: data.experience.length },
     { label: 'Education', count: data.education.length },
