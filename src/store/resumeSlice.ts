@@ -2,8 +2,7 @@
 import { createSlice, createAsyncThunk, type PayloadAction, nanoid } from '@reduxjs/toolkit';
 import apiService from '@/lib/http/ApiService';
 import type {
-  ResumeData, Experience, Education, Certification, Project, Skill, ContactInfo,
-  ParsedResumeData,
+  ResumeData, Experience, Education, Certification, Project, Skill, ContactInfo
 } from '@/store/resumeTypes';
 
 export type BuilderTemplateId = 'ledger' | 'northline' | 'compass';
@@ -37,25 +36,25 @@ const initialState: ResumeState = {
 
 // Only transformation left: tag each list item with a client-side id.
 // Everything else is a straight passthrough of response.data.
-function withIds(raw: ParsedResumeData): ResumeData {
-  return {
-    ...raw,
-    education: raw.education.map((e) => ({
-      ...e,
-      id: nanoid(),
-      location: e.location ?? '',
-      fieldOfStudy: e.fieldOfStudy ?? '',
-    })),
-    experience: raw.experience.map((e) => ({ ...e, id: nanoid() })),
-    certifications: raw.certifications?.map((c) => ({
-      ...c,
-      id: nanoid(),
-      issuingOrganization: c.issuingOrganization ?? '',
-    })) ?? [],
-    projects: raw.projects?.map((p) => ({ ...p, id: nanoid() })) ?? [],
-    skills: raw.skills.map((s) => ({ ...s, id: nanoid() })),
-  };
-}
+// function withIds(raw: ResumeData): ResumeData {
+//   return {
+//     ...raw,
+//     education: raw.education.map((e) => ({
+//       ...e,
+//       id: nanoid(),
+//       location: e.location ?? '',
+//       fieldOfStudy: e.fieldOfStudy ?? '',
+//     })),
+//     experience: raw.experience.map((e) => ({ ...e, id: nanoid() })),
+//     certifications: raw.certifications?.map((c) => ({
+//       ...c,
+//       id: nanoid(),
+//       issuingOrganization: c.issuingOrganization ?? '',
+//     })) ?? [],
+//     projects: raw.projects?.map((p) => ({ ...p, id: nanoid() })) ?? [],
+//     skills: raw.skills.map((s) => ({ ...s, id: nanoid() })),
+//   };
+// }
 
 export const parseResumeFromFile = createAsyncThunk(
   'resume/parseFromFile',
@@ -64,10 +63,33 @@ export const parseResumeFromFile = createAsyncThunk(
     if (error || !response.data) {
       return rejectWithValue('Could not parse this resume. Please try a different file.');
     }
-    console.log("data", withIds(response.data));
-    return withIds(response.data); // response.data now matches ResumeData 1:1 (+ ids)
+    // console.log("data", withIds(response.data));
+    return response.data; // response.data now matches ResumeData 1:1 (+ ids)
   }
 );
+
+export const saveNewResume = createAsyncThunk(
+  'resume/saveNewResume',
+  async (_, { getState, rejectWithValue }) => {
+    let { resume } = getState() as { resume: ResumeState };
+    const [response, error] = await apiService.createNewResume(resume.data);
+    if (error || !response.data) {
+      return rejectWithValue('Unable to create resume');
+    }
+    return response.data;
+  }
+)
+
+export const fetchResumeById = createAsyncThunk(
+  'resume/{:id}',
+  async (id: string, { rejectWithValue }) => {
+    const [response, error] = await apiService.getResumeById(id);
+    if (error || !response.data) {
+      return rejectWithValue('Unable to create resume');
+    }
+    return response.data;
+  }
+)
 
 const resumeSlice = createSlice({
   name: 'resume',
@@ -154,6 +176,12 @@ const resumeSlice = createSlice({
       .addCase(parseResumeFromFile.rejected, (state, action) => {
         state.parseStatus = 'failed';
         state.parseError = (action.payload as string) ?? 'Parse failed';
+      })
+      .addCase(saveNewResume.fulfilled, (state, action) => {
+        state.data.id = action.payload.id;
+      })
+      .addCase(fetchResumeById.fulfilled, (state, action) => {
+        state.data = action.payload;
       });
   },
 });

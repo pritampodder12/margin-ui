@@ -64,6 +64,7 @@ export interface ContactInfo {
 }
 
 export interface ResumeData {
+  id?: string;
   candidateName: string;
   title: string;
   objective: string;

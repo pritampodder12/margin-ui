@@ -13,6 +13,7 @@ interface SaveSuccessDialogProps {
   onClose: () => void;
   resumeName: string;
   onExport: () => void;
+  onContinueEdit: () => void;
 }
 
 const SaveSuccessDialog: React.FC<SaveSuccessDialogProps> = ({
@@ -20,6 +21,7 @@ const SaveSuccessDialog: React.FC<SaveSuccessDialogProps> = ({
   onClose,
   resumeName,
   onExport,
+  onContinueEdit
 }) => {
   if (!isOpen) return null;
 
@@ -72,7 +74,7 @@ const SaveSuccessDialog: React.FC<SaveSuccessDialogProps> = ({
             variant="ghost"
             size="default"
             className="w-full !py-2.5"
-            onClick={onClose}
+            onClick={onContinueEdit}
           >
             Continue editing
           </Button>

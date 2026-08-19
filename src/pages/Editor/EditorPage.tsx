@@ -5,19 +5,25 @@
  */
 
 import * as React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Logo } from '@/components/common/Logo';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/cn';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { SaveSuccessDialog } from '@/components/dialogs';
 import { usePDFExport } from '@/hooks';
-import { useAppSelector } from '@/store/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { SectionNav, type SectionInfo } from './components/SectionNav';
 import { ResumePreview } from './components/ResumePreview';
 import { InsightsPanel } from './components/InsightsPanel';
+import { fetchResumeById, saveNewResume } from '@/store/resumeSlice';
 
 const EditorPage: React.FC = () => {
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+
   const { data } = useAppSelector((state) => state.resume);
   const [activeSection, setActiveSection] = React.useState('Experience');
   const [saveStatus, setSaveStatus] = React.useState<'saved' | 'saving'>('saved');
@@ -30,6 +36,13 @@ const EditorPage: React.FC = () => {
     { label: 'Education', count: data.education.length },
     { label: 'Skills', count: data.skills.length },
   ];
+
+  React.useEffect(() => {
+    const resumeId = searchParams.get('resumeId');
+    if (resumeId) {
+      dispatch(fetchResumeById(resumeId));
+    }
+  }, []);
 
   // Auto-save simulation
   React.useEffect(() => {
@@ -47,6 +60,7 @@ const EditorPage: React.FC = () => {
 
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1200));
+    await dispatch(saveNewResume());
 
     setIsSaving(false);
     setSaveStatus('saved');
@@ -63,6 +77,12 @@ const EditorPage: React.FC = () => {
     setShowSaveSuccess(false);
     await downloadPDF(data);
   };
+
+  const handleContinueEditing = () => {
+    const resumeId = data.id;
+    navigate(`/editor?resumeId=${resumeId}`, {replace: true});
+    setShowSaveSuccess(false);
+  }
 
   return (
     <div className="h-screen bg-[var(--paper)] flex flex-col">
@@ -130,6 +150,7 @@ const EditorPage: React.FC = () => {
       <SaveSuccessDialog
         isOpen={showSaveSuccess}
         onClose={() => setShowSaveSuccess(false)}
+        onContinueEdit={handleContinueEditing}
         resumeName={data.candidateName || 'Untitled Resume'}
         onExport={handleExport}
       />
