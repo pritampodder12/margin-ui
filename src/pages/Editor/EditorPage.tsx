@@ -16,7 +16,7 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { SectionNav, type SectionInfo } from './components/SectionNav';
 import { ResumePreview } from './components/ResumePreview';
 import { InsightsPanel } from './components/InsightsPanel';
-import { fetchResumeById, saveNewResume } from '@/store/resumeSlice';
+import { fetchResumeById, saveNewResume, updateResume } from '@/store/resumeSlice';
 
 const EditorPage: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -55,12 +55,17 @@ const EditorPage: React.FC = () => {
   const [showSaveSuccess, setShowSaveSuccess] = React.useState(false);
 
   const handleSave = async () => {
+    const resumeId = searchParams.get('resumeId');
     setIsSaving(true);
     setSaveStatus('saving');
 
     // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1200));
-    await dispatch(saveNewResume());
+    // await new Promise((resolve) => setTimeout(resolve, 1200));
+    if(resumeId) {
+      await dispatch(updateResume(resumeId));
+    } else {
+      await dispatch(saveNewResume());
+    }
 
     setIsSaving(false);
     setSaveStatus('saved');

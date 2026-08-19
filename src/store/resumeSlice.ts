@@ -78,6 +78,18 @@ export const saveNewResume = createAsyncThunk(
     }
     return response.data;
   }
+);
+
+export const updateResume = createAsyncThunk(
+  'resume/updateResume',
+  async (id: string, { getState, rejectWithValue }) => {
+    let { resume } = getState() as { resume: ResumeState };
+    const [response, error] = await apiService.updateResume(id, resume.data);
+    if (error || !response.data) {
+      return rejectWithValue('Unable to update resume');
+    }
+    return response.data;
+  }
 )
 
 export const fetchResumeById = createAsyncThunk(
@@ -181,6 +193,9 @@ const resumeSlice = createSlice({
         state.data.id = action.payload.id;
       })
       .addCase(fetchResumeById.fulfilled, (state, action) => {
+        state.data = action.payload;
+      })
+      .addCase(updateResume.fulfilled, (state, action) => {
         state.data = action.payload;
       });
   },

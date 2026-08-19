@@ -44,6 +44,14 @@ class ApiService {
         }
     }
 
+    async updateResume(id: string, requestBody: ResumeData): Promise<ApiResult<ResumeData>> {
+        try {
+            const { data } = await axiosService.put<ApiResponse<ResumeData>>(`/resumes/${id}`, requestBody);
+            return [data, null];
+        } catch (error) {
+            return [null, error as AxiosError];
+        }
+    }
 }
 
 export const apiService = new ApiService();
