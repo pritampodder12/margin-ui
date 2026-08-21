@@ -7,16 +7,21 @@ import { PanelScoreRing } from './PanelScoreRing';
 import { ProgressBar } from './ProgressBar';
 import { KeywordChip } from './KeywordChip';
 import { AISuggestion } from './AISuggestion';
+import { getSectionSuggestions } from './aiSuggestions';
 
-export const InsightsPanel = ({ data }: { data: ResumeData }) => {
-  const { addNamedSkill } = useResumeActions();
+export const InsightsPanel = ({ data, activeSection }: { data: ResumeData; activeSection: string }) => {
+  const { updateExperience, updateEducation, updateObjective, addNamedSkill } = useResumeActions();
   const { atsScore, keywordScore, formattingScore, impactScore, keywords } = useATSScore(data);
 
-  const hasWeakBullet = data.experience.some((exp) =>
-    exp.description.some((b) => b.toLowerCase().includes('responsible') && b.length < 80)
-  );
-  const missingStakeholderKeyword = !keywords.find((k) => k.word === 'Stakeholder management')?.matched;
-  const summaryTooLong = data.objective.length > 150;
+  // Suggestion ids the user has already applied — these stay visible but flip to an "Applied" state.
+  const [appliedIds, setAppliedIds] = React.useState<Set<string>>(new Set());
+
+  const suggestions = React.useMemo(() => getSectionSuggestions(activeSection, data), [activeSection, data]);
+
+  const handleApply = (suggestion: ReturnType<typeof getSectionSuggestions>[number]) => {
+    suggestion.apply(data, { updateExperience, updateEducation, updateObjective, addNamedSkill });
+    setAppliedIds((prev) => new Set(prev).add(suggestion.id));
+  };
 
   return (
     <div className="border-l border-[var(--rule)] py-[22px] px-[22px] bg-[var(--paper)] overflow-y-auto max-[880px]:border-none max-[880px]:border-t">
@@ -54,33 +59,27 @@ export const InsightsPanel = ({ data }: { data: ResumeData }) => {
         </div>
       </div>
 
-      {/* AI Suggestions */}
+      {/* AI Suggestions — scoped to whichever section is active on the left */}
       <div className="mb-[30px] last:mb-0">
-        <Eyebrow>AI suggestions</Eyebrow>
+        <div className="flex items-baseline justify-between">
+          <Eyebrow>AI suggestions</Eyebrow>
+          <span className="font-['JetBrains_Mono'] text-[0.66rem] text-[var(--ink-faint)]">{activeSection}</span>
+        </div>
         <div className="mt-3">
-          {hasWeakBullet && (
-            <AISuggestion
-              tag="REWRITE"
-              text='Swap "responsible for" for a specific outcome — what changed because of you?'
-              onApply={() => {
-                // In real app, would trigger AI rewrite
-              }}
-            />
+          {suggestions.length === 0 && (
+            <p className="text-[0.8rem] text-[var(--ink-faint)]">
+              No suggestions for {activeSection.toLowerCase()} right now.
+            </p>
           )}
-          {missingStakeholderKeyword && (
+          {suggestions.map((suggestion) => (
             <AISuggestion
-              tag="KEYWORD"
-              text='Add "stakeholder management" — it appears in the job description but not in your resume.'
-              onApply={() => addNamedSkill('Stakeholder management')}
+              key={suggestion.id}
+              tag={suggestion.tag}
+              text={suggestion.text}
+              applied={appliedIds.has(suggestion.id)}
+              onApply={() => handleApply(suggestion)}
             />
-          )}
-          {summaryTooLong && (
-            <AISuggestion
-              tag="TIGHTEN"
-              text="Your summary runs long for a parser's first pass. Trim to under two sentences."
-              onApply={() => {}}
-            />
-          )}
+          ))}
         </div>
       </div>
     </div>

@@ -24,7 +24,7 @@ const emptyResume: ResumeData = {
   experience: [],
   certifications: [],
   projects: [],
-  skills: [],
+  skills: {},
 };
 
 const initialState: ResumeState = {
@@ -174,7 +174,7 @@ const resumeSlice = createSlice({
       state.data.education = state.data.education.filter(e => e.id !== action.payload);
     },
 
-    updateSkills(state, action: PayloadAction<Skill[]>) {
+    updateSkills(state, action: PayloadAction<Skill>) {
       state.data.skills = action.payload;
     },
     setBuilderTemplate(state, action: PayloadAction<BuilderTemplateId>) {

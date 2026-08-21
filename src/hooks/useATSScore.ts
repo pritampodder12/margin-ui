@@ -32,7 +32,7 @@ function calculateATSScore(data: ResumeData): number {
   });
 
   // Skills
-  if (data.skills.length >= 4) score += 5;
+  if (Object.keys(data.skills).length >= 4) score += 5;
 
   return Math.min(100, Math.round(score));
 }
@@ -54,7 +54,7 @@ export function useATSScore(data: ResumeData) {
       matched:
         word === 'Stakeholder management'
           ? false
-          : data.skills.some((s) => s.name.toLowerCase().includes(word.toLowerCase())),
+          : Object.keys(data.skills).forEach((s) => data.skills[s]?.some(el => el.name.toLowerCase().includes(word.toLowerCase()))),
     }));
 
     return { atsScore, keywordScore, formattingScore, impactScore, keywords };

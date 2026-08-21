@@ -1,7 +1,9 @@
 /**
  * Editor Page - orchestration shell
  * Wires the top bar, three-panel layout, and save/export flow together.
- * All resume field editing lives in ResumePreview / InsightsPanel.
+ * The middle panel is section-scoped: SectionEditor renders only the
+ * fields for whichever section is active in SectionNav. Insights stay
+ * in InsightsPanel.
  */
 
 import * as React from 'react';
@@ -14,7 +16,7 @@ import { SaveSuccessDialog } from '@/components/dialogs';
 import { usePDFExport } from '@/hooks';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { SectionNav, type SectionInfo } from './components/SectionNav';
-import { ResumePreview } from './components/ResumePreview';
+import { SectionEditor } from './components/SectionEditor';
 import { InsightsPanel } from './components/InsightsPanel';
 import { fetchResumeById, saveNewResume, updateResume } from '@/store/resumeSlice';
 
@@ -34,7 +36,7 @@ const EditorPage: React.FC = () => {
     { label: 'Summary', count: data.objective ? 1 : 0 },
     { label: 'Experience', count: data.experience.length },
     { label: 'Education', count: data.education.length },
-    { label: 'Skills', count: data.skills.length },
+    { label: 'Skills', count: Object.keys(data.skills).length },
   ];
 
   React.useEffect(() => {
@@ -147,8 +149,8 @@ const EditorPage: React.FC = () => {
       {/* Body Grid */}
       <div className="flex-1 grid grid-cols-[220px_1fr_340px] min-h-0 max-[1100px]:grid-cols-[190px_1fr_300px] max-[880px]:grid-cols-1 max-[880px]:grid-auto-rows-min">
         <SectionNav sections={sections} activeSection={activeSection} onSelect={setActiveSection} />
-        <ResumePreview data={data} />
-        <InsightsPanel data={data} />
+        <SectionEditor data={data} activeSection={activeSection} />
+        <InsightsPanel data={data} activeSection={activeSection} />
       </div>
 
       {/* Save Success Dialog */}

@@ -1,14 +1,14 @@
 // src/store/resumeTypes.ts
 
-export interface Skill {
-  id: string; // client-only, for list keys — not from backend
+export interface SkillItem {
   name: string;
-  category: string;
   proficiencyLevel: number;
   yearsOfExperience: number;
   description: string[];
   sortOrder: number;
 }
+
+export type Skill = Record<string, SkillItem[]>;
 
 export interface Education {
   id: string; // client-only
@@ -76,7 +76,7 @@ export interface ResumeData {
   experience: Experience[];
   certifications: Certification[];
   projects: Project[];
-  skills: Skill[];
+  skills: Skill;
 }
 
 // resumeTypes.ts — add alongside ResumeData
