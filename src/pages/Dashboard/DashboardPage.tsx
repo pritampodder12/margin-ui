@@ -13,7 +13,8 @@ import { ResumeCard, NewResumeCard } from '@/components/cards';
 import { ImportDialog } from '@/components/dialogs';
 // import { resumeStore } from '@/store';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { parseResumeFromFile } from '@/store/resumeSlice';
+import { getAllResumes, parseResumeFromFile } from '@/store/resumeSlice';
+import { ResumeData } from '@/store/resumeTypes';
 
 const DashboardPage: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -23,6 +24,7 @@ const DashboardPage: React.FC = () => {
   // const {data: resumeData} = useAppSelector(state => state.resume);
 
   const [isImportOpen, setIsImportOpen] = React.useState(false);
+  const [userResumes, setUserResumes] = React.useState<ResumeData[]>([]);
 
   // Dummy resume data for display
   const resumes = [
@@ -55,6 +57,15 @@ const DashboardPage: React.FC = () => {
     { num: '94', label: 'Best score — Product Design' },
   ];
 
+  React.useEffect(() => {
+    const fetchAllResume = async () => {
+      const resumeData = await dispatch(getAllResumes()).unwrap();
+      console.log("resumes", resumeData);
+      setUserResumes(resumeData.content);
+    }
+    fetchAllResume();
+  }, []);
+
   // Handle file import
   const handleImport = async (file: File) => {
     await dispatch(parseResumeFromFile(file));
@@ -70,9 +81,10 @@ const DashboardPage: React.FC = () => {
   };
 
   // Handle edit existing resume
-  const handleEdit = (_title: string) => {
-    // In real app, would load specific resume data
-    navigate('/editor');
+  const handleEdit = (id?: string) => {
+    if (id) {
+      navigate(`/editor?resumeId=${id}`);
+    }
   };
 
   return (
@@ -120,18 +132,18 @@ const DashboardPage: React.FC = () => {
 
           {/* Resume Grid */}
           <div className="grid grid-cols-3 gap-5.5 pb-20 max-lg:grid-cols-2 max-xs:grid-cols-1">
-            {resumes.map((resume) => (
+            {userResumes.map((resume) => (
               <ResumeCard
                 key={resume.title}
                 title={resume.title}
-                template={resume.template}
-                editedAgo={resume.editedAgo}
-                score={resume.score}
-                templateVariant={resume.variant}
-                onEdit={() => handleEdit(resume.title)}
-                onExport={() => {}}
-                onDuplicate={() => {}}
-                onDelete={() => {}}
+                template={resume.templateName}
+                editedAgo={resume.updatedAt}
+                score={90}
+                templateVariant={'single'}
+                onEdit={() => handleEdit(resume.id)}
+                onExport={() => { }}
+                onDuplicate={() => { }}
+                onDelete={() => { }}
               />
             ))}
 

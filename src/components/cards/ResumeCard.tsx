@@ -7,11 +7,12 @@ import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { ScoreRing } from '@/components/common/ScoreRing';
 import { cn } from '@/lib/cn';
+import moment from "moment";
 
 interface ResumeCardProps {
   title: string;
   template: string;
-  editedAgo: string;
+  editedAgo?: string;
   score: number;
   templateVariant: 'single' | 'sidebar' | 'timeline';
   onEdit?: () => void;
@@ -104,7 +105,7 @@ const ResumeCard = React.forwardRef<HTMLDivElement, ResumeCardProps>(
 
         {/* Meta */}
         <div className="flex justify-between items-center text-[0.76rem] text-[var(--ink-faint)] mb-3.5">
-          <span>Edited {editedAgo}</span>
+          <span>Edited {moment(editedAgo).fromNow()}</span>
           <span className="font-['JetBrains_Mono'] text-[0.64rem] bg-[var(--paper-alt)] border border-[var(--rule)] px-2 py-[2px] rounded-[20px] text-[var(--ink-soft)]">
             {template}
           </span>

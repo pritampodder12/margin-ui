@@ -69,6 +69,8 @@ export interface ResumeData {
   title: string;
   objective: string;
   templateName: string;       // parser's detected template — not the builder's own layout choice
+  createdAt?: string;
+  updatedAt?: string;
   contact: ContactInfo;       // frontend-only, user fills in
   education: Education[];
   experience: Experience[];

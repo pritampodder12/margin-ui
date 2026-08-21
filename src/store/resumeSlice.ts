@@ -103,6 +103,17 @@ export const fetchResumeById = createAsyncThunk(
   }
 )
 
+export const getAllResumes = createAsyncThunk(
+  'resumes/getAll',
+  async (_, { rejectWithValue }) => {
+    const [response, error] = await apiService.getAllResumes();
+    if (error || !response.data) {
+      return rejectWithValue('Unable to create resume');
+    }
+    return response.data;
+  }
+)
+
 const resumeSlice = createSlice({
   name: 'resume',
   initialState,

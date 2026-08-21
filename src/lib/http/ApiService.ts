@@ -8,7 +8,9 @@ export interface ApiResponse<T> {
     data: T;
     timestamp: string;
 }
-
+export interface ResumeListData {
+    content: ResumeData[];
+}
 type ApiResult<T> = [ApiResponse<T>, null] | [null, AxiosError];
 
 class ApiService {
@@ -47,6 +49,15 @@ class ApiService {
     async updateResume(id: string, requestBody: ResumeData): Promise<ApiResult<ResumeData>> {
         try {
             const { data } = await axiosService.put<ApiResponse<ResumeData>>(`/resumes/${id}`, requestBody);
+            return [data, null];
+        } catch (error) {
+            return [null, error as AxiosError];
+        }
+    }
+
+    async getAllResumes(): Promise<ApiResult<ResumeListData>> {
+        try {
+            const { data } = await axiosService.get<ApiResponse<ResumeListData>>('/resumes?page=0&size=10&sortBy=createdAt&sortDir=DESC');
             return [data, null];
         } catch (error) {
             return [null, error as AxiosError];
