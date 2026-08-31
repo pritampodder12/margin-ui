@@ -19,6 +19,7 @@ const buttonVariants = cva(
     transition-all duration-150
     active:translate-y-[1px]
     disabled:pointer-events-none disabled:opacity-50
+    justify-center text-center
   `,
   {
     variants: {
@@ -36,6 +37,11 @@ const buttonVariants = cva(
           bg-transparent text-[var(--ink-soft)]
           border-color-[var(--rule)]
           hover:text-[var(--ink)] hover:border-color-[var(--rule-strong)]
+        `,
+        block: `
+          bg-[var(--ink)] text-[var(--paper)]
+          w-full
+          hover:bg-black
         `,
       },
       size: {

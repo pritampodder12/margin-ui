@@ -63,6 +63,25 @@ class ApiService {
             return [null, error as AxiosError];
         }
     }
+
+    async getAtsScore(id: string, jobDescription: string) {
+        try {
+            const { data } = await axiosService.post(`/resumes/${id}/ats-analysis`, { jobDescription });
+            return [data, null];
+        } catch (error) {
+            return [null, error as AxiosError]
+        }
+    }
+
+    async getSuggestions(resumeId: string, analysisId: string, section: string) {
+        try {
+            const { data } = await axiosService.post(`/resumes/${resumeId}/${analysisId}/suggestions`, { section });
+            return [data, null];
+        } catch (error) {
+            return [null, error as AxiosError]
+        }
+    }
+
 }
 
 export const apiService = new ApiService();
