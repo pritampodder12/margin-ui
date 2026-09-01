@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { Eyebrow } from '@/components/ui/typography';
 import { cn } from '@/lib/cn';
+import { SectionType } from '@/store/resumeTypes';
 
 export interface SectionInfo {
-  label: string;
+  label: SectionType;
   count: number;
 }
 
@@ -25,6 +26,7 @@ const SectionItem = ({
       'py-2.5 px-3 rounded-[4px] text-[0.88rem] cursor-pointer',
       'border-l-2 border-transparent mb-0.5',
       'transition-colors',
+      'capitalize',
       active
         ? 'bg-[var(--red-soft)] text-[var(--red)] border-l-[var(--red)] font-semibold'
         : 'text-[var(--ink-soft)] hover:bg-[var(--paper-alt)] hover:text-[var(--ink)]'
@@ -48,8 +50,8 @@ export const SectionNav = ({
   onSelect,
 }: {
   sections: SectionInfo[];
-  activeSection: string;
-  onSelect: (label: string) => void;
+  activeSection: SectionType;
+  onSelect: (label: SectionType) => void;
 }) => (
   <div className="border-r border-[var(--rule)] py-[22px] px-4 overflow-y-auto max-[880px]:border-none max-[880px]:border-b">
     <Eyebrow className="px-1.5 mb-3 block">Sections</Eyebrow>

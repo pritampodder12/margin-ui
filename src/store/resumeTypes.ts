@@ -94,8 +94,8 @@ export interface AtsAnalysisData {
   extractedKeywords: ExtractedKeywordElement[];
 }
 
-export interface SuggestionsData {
-  suggestions: SuggestionElement[];
+export type SuggestionsData = {
+  [key in SectionType]?: SuggestionSectionData
 }
 
 interface AtsScore {
@@ -112,11 +112,15 @@ interface ExtractedKeywordElement {
 
 interface SuggestionElement {
   description: string;
-  section: string;
+  section: SectionType;
   suggestedText: string;
   targetRef: TargetRef;
   title: string;
   type?: SuggestionType;
+}
+
+export interface SuggestionSectionData {
+  suggestions: SuggestionElement[];
 }
 
 export type SuggestionType = "KEYWORD" | "REWRITE" | "METRIC"
@@ -126,3 +130,11 @@ interface TargetRef {
   bulletIndex?: number;
   entryId?: string;
 }
+
+export type SectionType =
+  | "experience"
+  | "education"
+  | "projects"
+  | "skills"
+  | "certifications"
+  | "summary";

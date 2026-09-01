@@ -8,27 +8,24 @@ import apiService from '@/lib/http/ApiService';
 import { Button } from '@/components/ui';
 import { RefreshCcw } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { setAtsAnalysisData, setJobDescription, setSuggestionsData } from '@/store/atsAnalysisSlice';
+import { setAtsAnalysisData, setJobDescription } from '@/store/atsAnalysisSlice';
+import { SectionType } from '@/store/resumeTypes';
 
-export const InsightsPanel = ({ activeSection, resumeId }: { activeSection: string, resumeId: string | null }) => {
+export const InsightsPanel = ({ activeSection, resumeId }: { activeSection: SectionType, resumeId: string | null }) => {
   const dispatch = useAppDispatch();
-  const {jobDescription, atsAnalysisData, suggestionsData} = useAppSelector(state => state.atsAnalysis);
+  const { jobDescription, atsAnalysisData, suggestionsData } = useAppSelector(state => state.atsAnalysis);
 
-  const {atsScore, extractedKeywords} = atsAnalysisData;
-  const {formatting, impact, keyword, overall} = atsScore;
-  const {suggestions} = suggestionsData;
+  const { atsScore, extractedKeywords } = atsAnalysisData;
+  const { formatting, impact, keyword, overall } = atsScore;
+  const { suggestions } = suggestionsData[activeSection] ?? { suggestions: [] };
 
   const handleJdSubmit = async () => {
     if (jobDescription && resumeId) {
       try {
-          const [response, error] = await apiService.getAtsScore(resumeId, jobDescription);
-          if(response && response?.data?.analysisId) {
-            dispatch(setAtsAnalysisData(response.data));
-             const [suggRes, suggError] = await apiService.getSuggestions(resumeId, response?.data?.analysisId, activeSection);
-             if(suggRes) {
-              dispatch(setSuggestionsData(suggRes.data));
-             }
-          }
+        const [response, error] = await apiService.getAtsScore(resumeId, jobDescription);
+        if (response && response?.data?.analysisId) {
+          dispatch(setAtsAnalysisData(response.data));
+        }
       } catch (err) {
         console.error('Failed to score job description', err);
       }
@@ -42,7 +39,7 @@ export const InsightsPanel = ({ activeSection, resumeId }: { activeSection: stri
   // const suggestions = React.useMemo(() => getSectionSuggestions(activeSection, data), [activeSection, data]);
 
   // const handleApply = (suggestion: ReturnType<typeof getSectionSuggestions>[number]) => {
-    
+
   // };
 
   return (
@@ -91,7 +88,7 @@ export const InsightsPanel = ({ activeSection, resumeId }: { activeSection: stri
       <div className="mb-[30px] last:mb-0">
         <div className="flex items-baseline justify-between">
           <Eyebrow>AI suggestions</Eyebrow>
-          <span className="font-['JetBrains_Mono'] text-[0.66rem] text-[var(--ink-faint)]">{activeSection}</span>
+          <span className="font-['JetBrains_Mono'] text-[0.66rem] text-[var(--ink-faint)] capitalize">{activeSection}</span>
         </div>
         <div className="mt-3">
           {suggestions.length === 0 && (
@@ -104,8 +101,8 @@ export const InsightsPanel = ({ activeSection, resumeId }: { activeSection: stri
               key={suggestion.suggestedText}
               type={suggestion.type}
               suggestedText={suggestion.suggestedText}
-              // applied={appliedIds.has(suggestion.id)}
-              // onApply={() => handleApply(suggestion)}
+            // applied={appliedIds.has(suggestion.id)}
+            // onApply={() => handleApply(suggestion)}
             />
           ))}
         </div>

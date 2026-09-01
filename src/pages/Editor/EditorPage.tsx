@@ -19,6 +19,9 @@ import { SectionNav, type SectionInfo } from './components/SectionNav';
 import { SectionEditor } from './components/SectionEditor';
 import { InsightsPanel } from './components/InsightsPanel';
 import { fetchResumeById, saveNewResume, updateResume } from '@/store/resumeSlice';
+import { SectionType } from '@/store/resumeTypes';
+import apiService from '@/lib/http/ApiService';
+import { setSuggestionsData } from '@/store/atsAnalysisSlice';
 
 const EditorPage: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -27,17 +30,22 @@ const EditorPage: React.FC = () => {
 
 
   const { data } = useAppSelector((state) => state.resume);
-  const [activeSection, setActiveSection] = React.useState('Experience');
+  const { atsAnalysisData, suggestionsData } = useAppSelector(state => state.atsAnalysis);
+  const [activeSection, setActiveSection] = React.useState<SectionType>('experience');
   const [saveStatus, setSaveStatus] = React.useState<'saved' | 'saving'>('saved');
+  const [isSaving, setIsSaving] = React.useState(false);
+  const [showSaveSuccess, setShowSaveSuccess] = React.useState(false);
   const resumeId = searchParams.get('resumeId')
   const { isGenerating, downloadPDF } = usePDFExport();
 
+  const { analysisId } = atsAnalysisData;
+
   const sections: SectionInfo[] = [
     // { label: 'Contact', count: Object.values(data?.contact).filter(Boolean).length },
-    { label: 'Summary', count: data.objective ? 1 : 0 },
-    { label: 'Experience', count: data.experience.length },
-    { label: 'Education', count: data.education.length },
-    { label: 'Skills', count: Object.keys(data.skills).length },
+    { label: 'summary', count: data.objective ? 1 : 0 },
+    { label: 'experience', count: data.experience.length },
+    { label: 'education', count: data.education.length },
+    { label: 'skills', count: Object.keys(data.skills).length },
   ];
 
   React.useEffect(() => {
@@ -53,8 +61,20 @@ const EditorPage: React.FC = () => {
     return () => clearTimeout(timer);
   }, [data]);
 
-  const [isSaving, setIsSaving] = React.useState(false);
-  const [showSaveSuccess, setShowSaveSuccess] = React.useState(false);
+  React.useEffect(() => {
+    if (activeSection && analysisId && !suggestionsData[activeSection] && resumeId) {
+      callSuggestionEndpoint();
+    }
+  }, [activeSection, analysisId, suggestionsData[activeSection], resumeId]);
+
+  const callSuggestionEndpoint = async () => {
+    if (!resumeId) return;
+    console.log("suggestion endpoint called!");
+    const [suggRes, suggError] = await apiService.getSuggestions(resumeId, analysisId, activeSection);
+    if (suggRes) {
+      dispatch(setSuggestionsData({ section: activeSection, suggestionData: suggRes.data }));
+    }
+  }
 
   const handleSave = async () => {
     const resumeId = searchParams.get('resumeId');
@@ -73,11 +93,6 @@ const EditorPage: React.FC = () => {
     setSaveStatus('saved');
     setShowSaveSuccess(true);
 
-    // In real app, would call:
-    // const response = await fetch('/api/resumes/save', {
-    //   method: 'POST',
-    //   body: JSON.stringify(data)
-    // });
   };
 
   const handleExport = async () => {

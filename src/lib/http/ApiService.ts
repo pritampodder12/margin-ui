@@ -1,6 +1,6 @@
 import { AxiosError } from "axios";
 import axiosService from "./AxiosService"
-import { AtsAnalysisData, ResumeData, SuggestionsData } from "@/store/resumeTypes";
+import { AtsAnalysisData, ResumeData, SuggestionsData, SuggestionSectionData } from "@/store/resumeTypes";
 
 export interface ApiResponse<T> {
     success: boolean;
@@ -73,9 +73,9 @@ class ApiService {
         }
     }
 
-    async getSuggestions(resumeId: string, analysisId: string, section: string): Promise<ApiResult<SuggestionsData>> {
+    async getSuggestions(resumeId: string, analysisId: string, section: string): Promise<ApiResult<SuggestionSectionData>> {
         try {
-            const { data } = await axiosService.post<ApiResponse<SuggestionsData>>(`/resumes/${resumeId}/${analysisId}/suggestions`, { section });
+            const { data } = await axiosService.post<ApiResponse<SuggestionSectionData>>(`/resumes/${resumeId}/${analysisId}/suggestions`, { section });
             return [data, null];
         } catch (error) {
             return [null, error as AxiosError];
