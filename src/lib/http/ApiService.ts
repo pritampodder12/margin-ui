@@ -1,6 +1,6 @@
 import { AxiosError } from "axios";
 import axiosService from "./AxiosService"
-import { ResumeData } from "@/store/resumeTypes";
+import { AtsAnalysisData, ResumeData, SuggestionsData } from "@/store/resumeTypes";
 
 export interface ApiResponse<T> {
     success: boolean;
@@ -64,21 +64,21 @@ class ApiService {
         }
     }
 
-    async getAtsScore(id: string, jobDescription: string) {
+    async getAtsScore(id: string, jobDescription: string): Promise<ApiResult<AtsAnalysisData>> {
         try {
-            const { data } = await axiosService.post(`/resumes/${id}/ats-analysis`, { jobDescription });
+            const { data } = await axiosService.post<ApiResponse<AtsAnalysisData>>(`/resumes/${id}/ats-analysis`, { jobDescription });
             return [data, null];
         } catch (error) {
-            return [null, error as AxiosError]
+            return [null, error as AxiosError];
         }
     }
 
-    async getSuggestions(resumeId: string, analysisId: string, section: string) {
+    async getSuggestions(resumeId: string, analysisId: string, section: string): Promise<ApiResult<SuggestionsData>> {
         try {
-            const { data } = await axiosService.post(`/resumes/${resumeId}/${analysisId}/suggestions`, { section });
+            const { data } = await axiosService.post<ApiResponse<SuggestionsData>>(`/resumes/${resumeId}/${analysisId}/suggestions`, { section });
             return [data, null];
         } catch (error) {
-            return [null, error as AxiosError]
+            return [null, error as AxiosError];
         }
     }
 

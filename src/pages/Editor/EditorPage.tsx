@@ -29,6 +29,7 @@ const EditorPage: React.FC = () => {
   const { data } = useAppSelector((state) => state.resume);
   const [activeSection, setActiveSection] = React.useState('Experience');
   const [saveStatus, setSaveStatus] = React.useState<'saved' | 'saving'>('saved');
+  const resumeId = searchParams.get('resumeId')
   const { isGenerating, downloadPDF } = usePDFExport();
 
   const sections: SectionInfo[] = [
@@ -40,7 +41,6 @@ const EditorPage: React.FC = () => {
   ];
 
   React.useEffect(() => {
-    const resumeId = searchParams.get('resumeId');
     if (resumeId) {
       dispatch(fetchResumeById(resumeId));
     }
@@ -63,7 +63,7 @@ const EditorPage: React.FC = () => {
 
     // Simulate API call
     // await new Promise((resolve) => setTimeout(resolve, 1200));
-    if(resumeId) {
+    if (resumeId) {
       await dispatch(updateResume(resumeId));
     } else {
       await dispatch(saveNewResume());
@@ -87,7 +87,7 @@ const EditorPage: React.FC = () => {
 
   const handleContinueEditing = () => {
     const resumeId = data.id;
-    navigate(`/editor?resumeId=${resumeId}`, {replace: true});
+    navigate(`/editor?resumeId=${resumeId}`, { replace: true });
     setShowSaveSuccess(false);
   }
 
@@ -150,7 +150,7 @@ const EditorPage: React.FC = () => {
       <div className="flex-1 grid grid-cols-[220px_1fr_340px] min-h-0 max-[1100px]:grid-cols-[190px_1fr_300px] max-[880px]:grid-cols-1 max-[880px]:grid-auto-rows-min">
         <SectionNav sections={sections} activeSection={activeSection} onSelect={setActiveSection} />
         <SectionEditor data={data} activeSection={activeSection} />
-        <InsightsPanel data={data} activeSection={activeSection} />
+        <InsightsPanel activeSection={activeSection} resumeId={resumeId} />
       </div>
 
       {/* Save Success Dialog */}

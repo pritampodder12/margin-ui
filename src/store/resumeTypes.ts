@@ -87,3 +87,42 @@ export type ParsedResumeData = Omit<ResumeData, 'education' | 'experience' | 'sk
   certifications: Omit<Certification, 'id'>[];
   projects: Omit<Project, 'id'>[];
 };
+
+export interface AtsAnalysisData {
+  analysisId: string;
+  atsScore: AtsScore;
+  extractedKeywords: ExtractedKeywordElement[];
+}
+
+export interface SuggestionsData {
+  suggestions: SuggestionElement[];
+}
+
+interface AtsScore {
+  formatting: number;
+  impact: number;
+  keyword: number;
+  overall: number;
+}
+
+interface ExtractedKeywordElement {
+  keyword: string;
+  matched: boolean;
+}
+
+interface SuggestionElement {
+  description: string;
+  section: string;
+  suggestedText: string;
+  targetRef: TargetRef;
+  title: string;
+  type?: SuggestionType;
+}
+
+export type SuggestionType = "KEYWORD" | "REWRITE" | "METRIC"
+
+interface TargetRef {
+  entryIndex: number;
+  bulletIndex?: number;
+  entryId?: string;
+}

@@ -2,15 +2,16 @@ import * as React from 'react';
 import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/cn';
+import { SuggestionType } from '@/store/resumeTypes';
 
 export const AISuggestion = ({
-  tag,
-  text,
+  type,
+  suggestedText,
   applied,
   onApply,
 }: {
-  tag: string;
-  text: string;
+  type?: SuggestionType;
+  suggestedText: string;
   applied?: boolean;
   onApply?: () => void;
 }) => (
@@ -26,10 +27,10 @@ export const AISuggestion = ({
         applied ? 'text-[var(--green)]' : 'text-[var(--red)]'
       )}
     >
-      {tag}
+      {type}
     </div>
     <p className={cn('text-[0.82rem] my-1.5 mb-2.5', applied ? 'text-[var(--ink-faint)]' : 'text-[var(--ink)]')}>
-      {text}
+      {suggestedText}
     </p>
     {applied ? (
       <div className="flex items-center gap-1.5 text-[0.78rem] text-[var(--green)] font-medium">

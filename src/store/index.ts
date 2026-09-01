@@ -1,9 +1,10 @@
 // src/store/index.ts
 import { configureStore } from '@reduxjs/toolkit';
 import resumeReducer from './resumeSlice';
+import atsAnalysisReduces from './atsAnalysisSlice';
 
 export const store = configureStore({
-  reducer: { resume: resumeReducer },
+  reducer: { resume: resumeReducer, atsAnalysis: atsAnalysisReduces },
   devTools: true
 });
 
