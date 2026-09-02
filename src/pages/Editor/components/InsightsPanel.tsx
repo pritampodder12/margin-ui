@@ -9,8 +9,9 @@ import { Button } from '@/components/ui';
 import { RefreshCcw } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { setAtsAnalysisData, setJobDescription, setSuggestionApplied } from '@/store/atsAnalysisSlice';
-import { SectionType, SuggestionElement } from '@/store/resumeTypes';
-import { updateExperienceDescription } from '@/store/resumeSlice';
+import { SectionType, Skill, SuggestionElement } from '@/store/resumeTypes';
+import { updateCandidateInfo, updateExperienceDescription, updateSkills } from '@/store/resumeSlice';
+import { nanoid } from '@reduxjs/toolkit';
 
 export const InsightsPanel = ({ activeSection, resumeId }: { activeSection: SectionType, resumeId: string | null }) => {
   const dispatch = useAppDispatch();
@@ -18,7 +19,7 @@ export const InsightsPanel = ({ activeSection, resumeId }: { activeSection: Sect
   const { data } = useAppSelector(state => state.resume);
   const { experience } = data;
   const { atsScore, extractedKeywords } = atsAnalysisData;
-  const { formatting, impact, keyword, overall } = atsScore;
+  const { formatting, impact, keywords, overall } = atsScore;
   const { suggestions } = suggestionsData[activeSection] ?? { suggestions: [] };
 
   const handleJdSubmit = async () => {
@@ -40,40 +41,107 @@ export const InsightsPanel = ({ activeSection, resumeId }: { activeSection: Sect
 
   // const suggestions = React.useMemo(() => getSectionSuggestions(activeSection, data), [activeSection, data]);
 
-  const handleApply = (suggestion: SuggestionElement, suggestionIndex: number) => {
-    switch (suggestion.type) {
-      case 'KEYWORD':
-        updateResumeSections(suggestion, suggestionIndex);
-        break;
-      case 'REWRITE':
-        updateResumeSections(suggestion, suggestionIndex);
-        break;
-      default:
-        break;
 
-    }
+  const handleApply = (suggestion: SuggestionElement, suggestionIndex: number) => {
+    updateResumeSections(suggestion, suggestionIndex);
   };
 
   const updateResumeSections = (suggestion: SuggestionElement, suggestionIndex: number) => {
     switch (activeSection) {
-      case 'experience':
-        const entry = experience[suggestion.targetRef.entryIndex];
-        if (!isNaN(suggestion.targetRef.entryIndex) && entry) {
-          dispatch(updateExperienceDescription({
-            index: suggestion.targetRef.entryIndex,
-            newValue: entry.description.concat(suggestion.suggestedText)
-          }));
-          dispatch(setSuggestionApplied({ section: activeSection, suggestionIndex }))
+      case 'experience': {
+        const { entryIndex, bulletIndex } = suggestion.targetRef;
+        const entry = experience[entryIndex];
+        if (isNaN(entryIndex) || !entry) return;
+
+        let newDescription: string[];
+
+        switch (suggestion.type) {
+          case 'KEYWORD':
+            // Append — bulletIndex is null, nothing to index into
+            newDescription = entry.description.concat(suggestion.suggestedText!);
+            break;
+
+          case 'REWRITE':
+          case 'METRIC':
+            // Replace — bulletIndex must be a real number
+            if (bulletIndex == null || !entry.description[bulletIndex]) return;
+            newDescription = entry.description.map((bullet, i) =>
+              i === bulletIndex ? suggestion.suggestedText! : bullet
+            );
+            break;
+
+          case 'REMOVE':
+            // Delete — suggestedText is null here, don't use it
+            if (bulletIndex == null || !entry.description[bulletIndex]) return;
+            newDescription = entry.description.filter((_, i) => i !== bulletIndex);
+            break;
+
+          default:
+            return;
         }
+
+        dispatch(updateExperienceDescription({ index: entryIndex, newValue: newDescription }));
+        dispatch(setSuggestionApplied({ section: activeSection, suggestionIndex }));
         break;
+      }
+
+      case 'skills': {
+        const { category, bulletIndex } = suggestion.targetRef;
+        if (!category) return;
+
+        switch (suggestion.type) {
+          case 'KEYWORD': {
+            // Append — new skill under the given category
+            const newSkill: Skill = {
+              id: nanoid(),
+              name: suggestion.suggestedText!,
+              category,
+              proficiencyLevel: 0,
+              yearsOfExperience: 0,
+              description: [],
+              sortOrder: data.skills.length,
+            };
+            dispatch(updateSkills([...data.skills, newSkill]));
+            break;
+          }
+
+          case 'REMOVE': {
+            if (!suggestion.currentText) return;
+            const target = data.skills.find(
+              s => s.category === category && s.name === suggestion.currentText
+            );
+            if (!target) return;
+
+            dispatch(updateSkills(data.skills.filter(s => s.id !== target.id)));
+            break;
+          }
+          // REWRITE / METRIC are not valid for skills per the prompt — no-op if they slip through
+          default:
+            return;
+        }
+
+        dispatch(setSuggestionApplied({ section: activeSection, suggestionIndex }));
+        break;
+      }
+
+      case 'summary': {
+        // Single free-text field — targetRef is always null, no indexing
+        if (suggestion.type !== 'REWRITE' || !suggestion.suggestedText) return;
+
+        dispatch(updateCandidateInfo({ objective: suggestion.suggestedText }));
+        dispatch(setSuggestionApplied({ section: activeSection, suggestionIndex }));
+        break;
+      }
+
       case 'education':
+        // TODO: same entryIndex/bulletIndex pattern as experience once you add
+        // updateEducationDescription to resumeSlice (education has no such reducer yet)
         break;
-      case 'skills':
-        break;
+
       default:
         break;
     }
-  }
+  };
 
   return (
     <div className="border-l border-[var(--rule)] py-[22px] px-[22px] bg-[var(--paper)] overflow-y-auto max-[880px]:border-none max-[880px]:border-t">
@@ -91,7 +159,7 @@ export const InsightsPanel = ({ activeSection, resumeId }: { activeSection: Sect
             </div>
           </div>
         </div>
-        <ProgressBar label="Keywords" percent={keyword} good={keyword >= 80} />
+        <ProgressBar label="Keywords" percent={keywords} good={keywords >= 80} />
         <ProgressBar label="Formatting" percent={formatting} good />
         <ProgressBar label="Impact" percent={impact} good={impact >= 80} />
       </div>

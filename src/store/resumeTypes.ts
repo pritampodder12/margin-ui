@@ -109,7 +109,7 @@ export type SuggestionsData = {
 interface AtsScore {
   formatting: number;
   impact: number;
-  keyword: number;
+  keywords: number;
   overall: number;
 }
 
@@ -126,13 +126,14 @@ export interface SuggestionElement {
   title: string;
   type?: SuggestionType;
   applied?: boolean;
+  currentText?: string;
 }
 
 export interface SuggestionSectionData {
   suggestions: SuggestionElement[];
 }
 
-export type SuggestionType = "KEYWORD" | "REWRITE" | "METRIC"
+export type SuggestionType = "KEYWORD" | "REWRITE" | "METRIC" | "REMOVE";
 
 interface TargetRef {
   entryIndex: number;

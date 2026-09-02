@@ -11,7 +11,7 @@ const initialState: AtsAnalysisState = {
     atsAnalysisData: {
         analysisId: '',
         atsScore: {
-            formatting: 0, impact: 0, keyword: 0, overall: 0
+            formatting: 0, impact: 0, keywords: 0, overall: 0
         },
         extractedKeywords: []
     },
