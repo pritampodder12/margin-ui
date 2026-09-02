@@ -36,7 +36,7 @@ export const EducationSection = ({ data }: { data: ResumeData }) => {
         <EducationCard
           key={edu.id}
           education={edu}
-          expanded={expandedId === edu.id}
+          expanded={true}
           onToggle={() => setExpandedId(expandedId === edu.id ? undefined : edu.id)}
           onUpdate={(updates) => updateEducation(edu.id, updates)}
           onDelete={() => {

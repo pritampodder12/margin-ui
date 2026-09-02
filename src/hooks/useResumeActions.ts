@@ -1,6 +1,6 @@
 import { nanoid } from '@reduxjs/toolkit';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import type { Experience, Education, Skill } from '@/store/resumeTypes';
+import type { Experience, Education, Skill, Project, Certification } from '@/store/resumeTypes';
 import {
   addExperience as addExperienceAction,
   updateExperience as updateExperienceAction,
@@ -8,6 +8,12 @@ import {
   addEducation as addEducationAction,
   updateEducation as updateEducationAction,
   removeEducation,
+  addProject as addProjectAction,
+  updateProject as updateProjectAction,
+  removeProject,
+  addCertification as addCertificationAction,
+  updateCertification as updateCertificationAction,
+  removeCertification,
   updateSkills,
   updateContact,
   updateCandidateInfo,
@@ -19,6 +25,8 @@ export function useResumeActions() {
 
   const addExperience = () => dispatch(addExperienceAction());
   const addEducation = () => dispatch(addEducationAction());
+  const addProject = () => dispatch(addProjectAction());
+  const addCertification = () => dispatch(addCertificationAction());
 
   const addSkill = (category: string, name = '') => {
     const sameCategory = data.skills.filter((s) => (s.category || 'Uncategorized') === category);
@@ -89,8 +97,16 @@ export function useResumeActions() {
   const updateEducation = (id: string, updates: Partial<Education>) =>
     dispatch(updateEducationAction({ id, updates }));
 
+  const updateProject = (id: string, updates: Partial<Project>) =>
+    dispatch(updateProjectAction({ id, updates }));
+
+  const updateCertification = (id: string, updates: Partial<Certification>) =>
+    dispatch(updateCertificationAction({ id, updates }));
+
   const deleteExperience = (id: string) => dispatch(removeExperience(id));
   const deleteEducation = (id: string) => dispatch(removeEducation(id));
+  const deleteProject = (id: string) => dispatch(removeProject(id));
+  const deleteCertification = (id: string) => dispatch(removeCertification(id));
 
   const updateCandidateName = (candidateName: string) => dispatch(updateCandidateInfo({ candidateName }));
   const updateObjective = (objective: string) => dispatch(updateCandidateInfo({ objective }));
@@ -99,14 +115,20 @@ export function useResumeActions() {
   return {
     addExperience,
     addEducation,
+    addProject,
+    addCertification,
     addSkill,
     addCategory,
     renameCategory,
     deleteCategory,
     updateExperience,
     updateEducation,
+    updateProject,
+    updateCertification,
     deleteExperience,
     deleteEducation,
+    deleteProject,
+    deleteCertification,
     updateSkillName,
     deleteSkill,
     updateCandidateName,

@@ -5,6 +5,8 @@ import { SummarySection } from './SummarySection';
 import { ExperienceSection } from './ExperienceSection';
 import { EducationSection } from './EducationSection';
 import { SkillsSection } from './SkillsSection';
+import { ProjectsSection } from './ProjectsSection';
+import { CertificationsSection } from './CertificationsSection';
 
 type SectionMeta = {
   heading: string;
@@ -33,6 +35,16 @@ const SECTION_META: Record<string, SectionMeta> = {
     count: (data) => Object.keys(data.skills).length,
     noun: (n) => `${n} ${n === 1 ? 'skill' : 'skills'}`,
   },
+  projects: {
+    heading: 'Projects',
+    count: (data) => data.projects.length,
+    noun: (n) => `${n} ${n === 1 ? 'entry' : 'entries'}`,
+  },
+  certifications: {
+    heading: 'Certifications',
+    count: (data) => data.certifications.length,
+    noun: (n) => `${n} ${n === 1 ? 'entry' : 'entries'}`,
+  },
 };
 
 export const SectionEditor = ({ data, activeSection }: { data: ResumeData; activeSection: SectionType }) => {
@@ -54,6 +66,8 @@ export const SectionEditor = ({ data, activeSection }: { data: ResumeData; activ
         {activeSection === 'experience' && <ExperienceSection data={data} />}
         {activeSection === 'education' && <EducationSection data={data} />}
         {activeSection === 'skills' && <SkillsSection data={data} />}
+        {activeSection === 'projects' && <ProjectsSection data={data} />}
+        {activeSection === 'certifications' && <CertificationsSection data={data} />}
       </div>
     </div>
   );

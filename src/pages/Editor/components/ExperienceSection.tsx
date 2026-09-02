@@ -37,7 +37,7 @@ export const ExperienceSection = ({ data }: { data: ResumeData }) => {
         <ExperienceCard
           key={exp.id}
           experience={exp}
-          expanded={expandedId === exp.id}
+          expanded={true}
           onToggle={() => setExpandedId(expandedId === exp.id ? undefined : exp.id)}
           onUpdate={(updates) => updateExperience(exp.id, updates)}
           onDelete={() => {

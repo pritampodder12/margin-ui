@@ -41,11 +41,12 @@ const EditorPage: React.FC = () => {
   const { analysisId } = atsAnalysisData;
 
   const sections: SectionInfo[] = [
-    // { label: 'Contact', count: Object.values(data?.contact).filter(Boolean).length },
     { label: 'summary', count: data.objective ? 1 : 0 },
     { label: 'experience', count: data.experience.length },
     { label: 'education', count: data.education.length },
     { label: 'skills', count: Object.keys(data.skills).length },
+    { label: 'projects', count: data.projects.length },
+    { label: 'certifications', count: data.certifications.length },
   ];
 
   React.useEffect(() => {

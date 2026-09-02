@@ -160,6 +160,20 @@ const resumeSlice = createSlice({
       }
     },
 
+    updateProjectDescription(state, action: PayloadAction<{ index: number, newValue: string[] }>) {
+      const item = state.data.projects[action.payload.index];
+      if (item) {
+        item.description = action.payload.newValue;
+      }
+    },
+
+    updateCertificationDescription(state, action: PayloadAction<{ index: number, newValue: string[] }>) {
+      const item = state.data.certifications[action.payload.index];
+      if (item) {
+        item.description = action.payload.newValue;
+      }
+    },
+
     addEducation: {
       reducer(state, action: PayloadAction<Education>) {
         state.data.education.push(action.payload);
@@ -181,6 +195,52 @@ const resumeSlice = createSlice({
     },
     removeEducation(state, action: PayloadAction<string>) {
       state.data.education = state.data.education.filter(e => e.id !== action.payload);
+    },
+
+    addProject: {
+      reducer(state, action: PayloadAction<Project>) {
+        state.data.projects.push(action.payload);
+      },
+      prepare(project?: Partial<Project>) {
+        return {
+          payload: {
+            id: nanoid(),
+            name: '', description: [], technologies: '',
+            startDate: '', current: false, sortOrder: 0,
+            ...project,
+          } as Project,
+        };
+      },
+    },
+    updateProject(state, action: PayloadAction<{ id: string; updates: Partial<Project> }>) {
+      const project = state.data.projects.find(p => p.id === action.payload.id);
+      if (project) Object.assign(project, action.payload.updates);
+    },
+    removeProject(state, action: PayloadAction<string>) {
+      state.data.projects = state.data.projects.filter(p => p.id !== action.payload);
+    },
+
+    addCertification: {
+      reducer(state, action: PayloadAction<Certification>) {
+        state.data.certifications.push(action.payload);
+      },
+      prepare(cert?: Partial<Certification>) {
+        return {
+          payload: {
+            id: nanoid(),
+            name: '', issuingOrganization: '', doesNotExpire: false,
+            description: [], sortOrder: 0,
+            ...cert,
+          } as Certification,
+        };
+      },
+    },
+    updateCertification(state, action: PayloadAction<{ id: string; updates: Partial<Certification> }>) {
+      const cert = state.data.certifications.find(c => c.id === action.payload.id);
+      if (cert) Object.assign(cert, action.payload.updates);
+    },
+    removeCertification(state, action: PayloadAction<string>) {
+      state.data.certifications = state.data.certifications.filter(c => c.id !== action.payload);
     },
 
     updateSkills(state, action: PayloadAction<Skill[]>) {
@@ -225,8 +285,11 @@ export const {
   setData, updateCandidateInfo, updateContact,
   addExperience, updateExperience, removeExperience,
   addEducation, updateEducation, removeEducation,
+  addProject, updateProject, removeProject,
+  addCertification, updateCertification, removeCertification,
   updateSkills, setBuilderTemplate, resetResume,
-  updateExperienceDescription
+  updateExperienceDescription, updateProjectDescription,
+  updateCertificationDescription
 } = resumeSlice.actions;
 
 export default resumeSlice.reducer;

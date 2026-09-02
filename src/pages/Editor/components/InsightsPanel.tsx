@@ -10,7 +10,7 @@ import { RefreshCcw } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { setAtsAnalysisData, setJobDescription, setSuggestionApplied } from '@/store/atsAnalysisSlice';
 import { SectionType, Skill, SuggestionElement } from '@/store/resumeTypes';
-import { updateCandidateInfo, updateExperienceDescription, updateSkills } from '@/store/resumeSlice';
+import { updateCandidateInfo, updateCertification, updateExperienceDescription, updateProject, updateProjectDescription, updateSkills } from '@/store/resumeSlice';
 import { nanoid } from '@reduxjs/toolkit';
 
 export const InsightsPanel = ({ activeSection, resumeId }: { activeSection: SectionType, resumeId: string | null }) => {
@@ -46,7 +46,8 @@ export const InsightsPanel = ({ activeSection, resumeId }: { activeSection: Sect
     updateResumeSections(suggestion, suggestionIndex);
   };
 
-  const updateResumeSections = (suggestion: SuggestionElement, suggestionIndex: number) => {
+
+   const updateResumeSections = (suggestion: SuggestionElement, suggestionIndex: number) => {
     switch (activeSection) {
       case 'experience': {
         const { entryIndex, bulletIndex } = suggestion.targetRef;
@@ -81,6 +82,102 @@ export const InsightsPanel = ({ activeSection, resumeId }: { activeSection: Sect
         }
 
         dispatch(updateExperienceDescription({ index: entryIndex, newValue: newDescription }));
+        dispatch(setSuggestionApplied({ section: activeSection, suggestionIndex }));
+        break;
+      }
+
+            case 'projects': {
+        const { entryIndex, bulletIndex } = suggestion.targetRef;
+        const entry = data.projects[entryIndex];
+        if (isNaN(entryIndex) || !entry) return;
+
+        // Prefer matching on currentText (stable) since bulletIndex can drift
+        // if the resume changed since the suggestion was generated. Falls back
+        // to bulletIndex only when currentText isn't available or doesn't match.
+        const resolveBulletIndex = (description: string[], bulletIndex?: number, currentText?: string) => {
+          if (currentText != null) {
+            const matched = description.indexOf(currentText);
+            if (matched !== -1) return matched;
+          }
+          if (bulletIndex != null && description[bulletIndex] != null) return bulletIndex;
+          return -1;
+        };
+
+        let newDescription: string[];
+
+        switch (suggestion.type) {
+          case 'KEYWORD':
+            // Append — bulletIndex is null, nothing to index into
+            newDescription = entry.description.concat(suggestion.suggestedText!);
+            break;
+
+          case 'REWRITE':
+          case 'METRIC': {
+            const idx = resolveBulletIndex(entry.description, bulletIndex, suggestion.currentText);
+            if (idx === -1) {
+              console.warn('Could not locate target bullet for suggestion', suggestion);
+              return;
+            }
+            newDescription = entry.description.map((bullet, i) =>
+              i === idx ? suggestion.suggestedText! : bullet
+            );
+            break;
+          }
+
+          case 'REMOVE': {
+            const idx = resolveBulletIndex(entry.description, bulletIndex, suggestion.currentText);
+            if (idx === -1) {
+              console.warn('Could not locate target bullet for suggestion', suggestion);
+              return;
+            }
+            newDescription = entry.description.filter((_, i) => i !== idx);
+            break;
+          }
+
+          default:
+            return;
+        }
+
+        dispatch(updateProjectDescription({ index: entryIndex, newValue: newDescription }));
+        dispatch(setSuggestionApplied({ section: activeSection, suggestionIndex }));
+        break;
+      }
+
+      case 'certifications': {
+        const { entryIndex, bulletIndex } = suggestion.targetRef;
+        const entry = data.certifications[entryIndex];
+        if (isNaN(entryIndex) || !entry) return;
+
+        let newDescription: string[];
+
+        switch (suggestion.type) {
+          case 'KEYWORD':
+            // Append — bulletIndex is null, nothing to index into
+            newDescription = entry.description.concat(suggestion.suggestedText!);
+            break;
+
+          case 'REWRITE':
+          case 'METRIC':
+            // Replace — bulletIndex must be a real number
+            if (bulletIndex == null || !entry.description[bulletIndex]) return;
+            newDescription = entry.description.map((bullet, i) =>
+              i === bulletIndex ? suggestion.suggestedText! : bullet
+            );
+            break;
+
+          case 'REMOVE':
+            // Delete — suggestedText is null here, don't use it
+            if (bulletIndex == null || !entry.description[bulletIndex]) return;
+            newDescription = entry.description.filter((_, i) => i !== bulletIndex);
+            break;
+
+          default:
+            return;
+        }
+
+        // Certifications has no index-based description reducer like experience does,
+        // so we use the generic updateCertification({ id, updates }) reducer instead.
+        dispatch(updateCertification({ id: entry.id, updates: { description: newDescription } }));
         dispatch(setSuggestionApplied({ section: activeSection, suggestionIndex }));
         break;
       }
