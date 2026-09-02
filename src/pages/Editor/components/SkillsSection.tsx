@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { ResumeData } from '@/store/resumeTypes';
+import type { ResumeData, Skill } from '@/store/resumeTypes';
 import { useResumeActions } from '@/hooks/useResumeActions';
 import { SkillPill } from './SkillPill';
 import { cn } from '@/lib/cn';
@@ -9,6 +9,19 @@ export const SkillsSection = ({ data }: { data: ResumeData }) => {
     useResumeActions();
   const [newCategory, setNewCategory] = React.useState('');
   const [collapsed, setCollapsed] = React.useState<Set<string>>(new Set());
+
+  // Group the flat skills array by category, purely for rendering.
+  // Preserves sortOrder within each group; falls back to "Uncategorized".
+  const grouped = React.useMemo(() => {
+    const map = new Map<string, Skill[]>();
+    data.skills.forEach((skill) => {
+      const category = skill.category || 'Uncategorized';
+      if (!map.has(category)) map.set(category, []);
+      map.get(category)!.push(skill);
+    });
+    map.forEach((items) => items.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)));
+    return map;
+  }, [data.skills]);
 
   const toggleCategory = (category: string) => {
     setCollapsed((prev) => {
@@ -30,7 +43,7 @@ export const SkillsSection = ({ data }: { data: ResumeData }) => {
 
   return (
     <div className="bg-[var(--card)] border border-[var(--rule)] rounded-[var(--radius-md)] p-4">
-      {Object.entries(data.skills).map(([category, items]) => {
+      {Array.from(grouped.entries()).map(([category, items]) => {
         const isOpen = !collapsed.has(category);
 
         return (
@@ -84,12 +97,12 @@ export const SkillsSection = ({ data }: { data: ResumeData }) => {
 
             {isOpen && (
               <div className="flex flex-wrap gap-2 items-center px-4 pb-4">
-                {items.map((item, index) => (
+                {items.map((skill) => (
                   <SkillPill
-                    key={`${category}-${index}`}
-                    skill={item.name}
-                    onUpdate={(v) => updateSkillName(category, index, v)}
-                    onDelete={() => deleteSkill(category, index)}
+                    key={skill.id}
+                    skill={skill.name}
+                    onUpdate={(v) => updateSkillName(skill.id, v)}
+                    onDelete={() => deleteSkill(skill.id)}
                   />
                 ))}
                 <button

@@ -24,7 +24,7 @@ const emptyResume: ResumeData = {
   experience: [],
   certifications: [],
   projects: [],
-  skills: {},
+  skills: [],
 };
 
 const initialState: ResumeState = {
@@ -151,6 +151,15 @@ const resumeSlice = createSlice({
       state.data.experience = state.data.experience.filter(e => e.id !== action.payload);
     },
 
+    updateExperienceDescription(state, action: PayloadAction<{ index: number, newValue: string[] }>) {
+      const item = state.data.experience[action.payload.index];
+      console.log("newValue", action.payload.newValue);
+      console.log("item", item);
+      if (item) {
+        item.description = action.payload.newValue;
+      }
+    },
+
     addEducation: {
       reducer(state, action: PayloadAction<Education>) {
         state.data.education.push(action.payload);
@@ -174,7 +183,7 @@ const resumeSlice = createSlice({
       state.data.education = state.data.education.filter(e => e.id !== action.payload);
     },
 
-    updateSkills(state, action: PayloadAction<Skill>) {
+    updateSkills(state, action: PayloadAction<Skill[]>) {
       state.data.skills = action.payload;
     },
     setBuilderTemplate(state, action: PayloadAction<BuilderTemplateId>) {
@@ -217,6 +226,7 @@ export const {
   addExperience, updateExperience, removeExperience,
   addEducation, updateEducation, removeEducation,
   updateSkills, setBuilderTemplate, resetResume,
+  updateExperienceDescription
 } = resumeSlice.actions;
 
 export default resumeSlice.reducer;

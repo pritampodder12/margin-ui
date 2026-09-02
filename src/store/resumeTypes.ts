@@ -8,7 +8,15 @@ export interface SkillItem {
   sortOrder: number;
 }
 
-export type Skill = Record<string, SkillItem[]>;
+export interface Skill {
+  id: string;
+  name: string;
+  category: string;
+  proficiencyLevel: number;
+  yearsOfExperience: number;
+  description: string[];
+  sortOrder: number;
+}
 
 export interface Education {
   id: string; // client-only
@@ -76,7 +84,7 @@ export interface ResumeData {
   experience: Experience[];
   certifications: Certification[];
   projects: Project[];
-  skills: Skill;
+  skills: Skill[];
 }
 
 // resumeTypes.ts — add alongside ResumeData
@@ -110,13 +118,14 @@ interface ExtractedKeywordElement {
   matched: boolean;
 }
 
-interface SuggestionElement {
+export interface SuggestionElement {
   description: string;
   section: SectionType;
   suggestedText: string;
   targetRef: TargetRef;
   title: string;
   type?: SuggestionType;
+  applied?: boolean;
 }
 
 export interface SuggestionSectionData {
@@ -129,6 +138,7 @@ interface TargetRef {
   entryIndex: number;
   bulletIndex?: number;
   entryId?: string;
+  category?: string;
 }
 
 export type SectionType =

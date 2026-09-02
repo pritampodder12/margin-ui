@@ -6,12 +6,12 @@ import { SuggestionType } from '@/store/resumeTypes';
 
 export const AISuggestion = ({
   type,
-  suggestedText,
+  description,
   applied,
   onApply,
 }: {
   type?: SuggestionType;
-  suggestedText: string;
+  description: string;
   applied?: boolean;
   onApply?: () => void;
 }) => (
@@ -30,7 +30,7 @@ export const AISuggestion = ({
       {type}
     </div>
     <p className={cn('text-[0.82rem] my-1.5 mb-2.5', applied ? 'text-[var(--ink-faint)]' : 'text-[var(--ink)]')}>
-      {suggestedText}
+      {description}
     </p>
     {applied ? (
       <div className="flex items-center gap-1.5 text-[0.78rem] text-[var(--green)] font-medium">

@@ -31,6 +31,15 @@ const atsAnalysisSlice = createSlice({
         },
         setSuggestionsData(state, action: PayloadAction<{ section: SectionType, suggestionData: SuggestionSectionData }>) {
             state.suggestionsData[action.payload.section] = action.payload.suggestionData;
+        },
+        setSuggestionApplied(state, action: PayloadAction<{ section: SectionType, suggestionIndex: number }>) {
+            const item = state.suggestionsData[action.payload.section];
+            if (item) {
+                const currentSuggestionData = item.suggestions[action.payload.suggestionIndex];
+                if (currentSuggestionData) {
+                    currentSuggestionData.applied = true;
+                }
+            }
         }
     }
 })
@@ -38,7 +47,8 @@ const atsAnalysisSlice = createSlice({
 export const {
     setJobDescription,
     setAtsAnalysisData,
-    setSuggestionsData
+    setSuggestionsData,
+    setSuggestionApplied
 } = atsAnalysisSlice.actions;
 
 export default atsAnalysisSlice.reducer;

@@ -8,13 +8,15 @@ import apiService from '@/lib/http/ApiService';
 import { Button } from '@/components/ui';
 import { RefreshCcw } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { setAtsAnalysisData, setJobDescription } from '@/store/atsAnalysisSlice';
-import { SectionType } from '@/store/resumeTypes';
+import { setAtsAnalysisData, setJobDescription, setSuggestionApplied } from '@/store/atsAnalysisSlice';
+import { SectionType, SuggestionElement } from '@/store/resumeTypes';
+import { updateExperienceDescription } from '@/store/resumeSlice';
 
 export const InsightsPanel = ({ activeSection, resumeId }: { activeSection: SectionType, resumeId: string | null }) => {
   const dispatch = useAppDispatch();
   const { jobDescription, atsAnalysisData, suggestionsData } = useAppSelector(state => state.atsAnalysis);
-
+  const { data } = useAppSelector(state => state.resume);
+  const { experience } = data;
   const { atsScore, extractedKeywords } = atsAnalysisData;
   const { formatting, impact, keyword, overall } = atsScore;
   const { suggestions } = suggestionsData[activeSection] ?? { suggestions: [] };
@@ -38,9 +40,40 @@ export const InsightsPanel = ({ activeSection, resumeId }: { activeSection: Sect
 
   // const suggestions = React.useMemo(() => getSectionSuggestions(activeSection, data), [activeSection, data]);
 
-  // const handleApply = (suggestion: ReturnType<typeof getSectionSuggestions>[number]) => {
+  const handleApply = (suggestion: SuggestionElement, suggestionIndex: number) => {
+    switch (suggestion.type) {
+      case 'KEYWORD':
+        updateResumeSections(suggestion, suggestionIndex);
+        break;
+      case 'REWRITE':
+        updateResumeSections(suggestion, suggestionIndex);
+        break;
+      default:
+        break;
 
-  // };
+    }
+  };
+
+  const updateResumeSections = (suggestion: SuggestionElement, suggestionIndex: number) => {
+    switch (activeSection) {
+      case 'experience':
+        const entry = experience[suggestion.targetRef.entryIndex];
+        if (!isNaN(suggestion.targetRef.entryIndex) && entry) {
+          dispatch(updateExperienceDescription({
+            index: suggestion.targetRef.entryIndex,
+            newValue: entry.description.concat(suggestion.suggestedText)
+          }));
+          dispatch(setSuggestionApplied({ section: activeSection, suggestionIndex }))
+        }
+        break;
+      case 'education':
+        break;
+      case 'skills':
+        break;
+      default:
+        break;
+    }
+  }
 
   return (
     <div className="border-l border-[var(--rule)] py-[22px] px-[22px] bg-[var(--paper)] overflow-y-auto max-[880px]:border-none max-[880px]:border-t">
@@ -96,13 +129,13 @@ export const InsightsPanel = ({ activeSection, resumeId }: { activeSection: Sect
               No suggestions for {activeSection.toLowerCase()} right now.
             </p>
           )}
-          {suggestions.map((suggestion) => (
+          {suggestions.map((suggestion, idx) => (
             <AISuggestion
               key={suggestion.suggestedText}
               type={suggestion.type}
-              suggestedText={suggestion.suggestedText}
-            // applied={appliedIds.has(suggestion.id)}
-            // onApply={() => handleApply(suggestion)}
+              description={suggestion.description}
+              applied={suggestion.applied}
+              onApply={() => handleApply(suggestion, idx)}
             />
           ))}
         </div>

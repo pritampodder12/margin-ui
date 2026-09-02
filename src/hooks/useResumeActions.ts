@@ -1,6 +1,6 @@
 import { nanoid } from '@reduxjs/toolkit';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import type { Experience, Education, SkillItem } from '@/store/resumeTypes';
+import type { Experience, Education, Skill } from '@/store/resumeTypes';
 import {
   addExperience as addExperienceAction,
   updateExperience as updateExperienceAction,
@@ -21,58 +21,66 @@ export function useResumeActions() {
   const addEducation = () => dispatch(addEducationAction());
 
   const addSkill = (category: string, name = '') => {
-  const existing = data.skills[category] ?? [];
-  const newSkill: SkillItem = {
-    name,
-    proficiencyLevel: 0,
-    yearsOfExperience: 0,
-    description: [],
-    sortOrder: existing.length + 1,
+    const sameCategory = data.skills.filter((s) => (s.category || 'Uncategorized') === category);
+    const newSkill: Skill = {
+      id: nanoid(),
+      name,
+      category,
+      proficiencyLevel: 0,
+      yearsOfExperience: 0,
+      description: [],
+      sortOrder: sameCategory.length + 1,
+    };
+    dispatch(updateSkills([...data.skills, newSkill]));
   };
-  dispatch(
-    updateSkills({
-      ...data.skills,
-      [category]: [...existing, newSkill],
-    })
-  );
-};
 
-const updateSkillName = (category: string, index: number, value: string) => {
-  const items = data.skills[category] ?? [];
-  dispatch(
-    updateSkills({
-      ...data.skills,
-      [category]: items.map((skill, i) => (i === index ? { ...skill, name: value } : skill)),
-    })
-  );
-};
+  const updateSkillName = (id: string, value: string) => {
+    dispatch(
+      updateSkills(data.skills.map((skill) => (skill.id === id ? { ...skill, name: value } : skill)))
+    );
+  };
 
-const deleteSkill = (category: string, index: number) => {
-  const items = data.skills[category] ?? [];
-  dispatch(
-    updateSkills({
-      ...data.skills,
-      [category]: items.filter((_, i) => i !== index),
-    })
-  );
-};
+  const deleteSkill = (id: string) => {
+    dispatch(updateSkills(data.skills.filter((skill) => skill.id !== id)));
+  };
 
   const addCategory = (category: string) => {
     const trimmed = category.trim();
-    if (!trimmed || data.skills[trimmed]) return;
-    dispatch(updateSkills({ ...data.skills, [trimmed]: [] }));
+    if (!trimmed) return;
+    const exists = data.skills.some((s) => (s.category || 'Uncategorized') === trimmed);
+    if (exists) return;
+    // Empty categories with no skills yet don't exist in a flat array,
+    // so we create a placeholder skill to represent the new category.
+    const placeholder: Skill = {
+      id: nanoid(),
+      name: '',
+      category: trimmed,
+      proficiencyLevel: 0,
+      yearsOfExperience: 0,
+      description: [],
+      sortOrder: 1,
+    };
+    dispatch(updateSkills([...data.skills, placeholder]));
   };
 
   const renameCategory = (oldName: string, newName: string) => {
     const trimmed = newName.trim();
-    if (!trimmed || trimmed === oldName || data.skills[trimmed]) return;
-    const { [oldName]: items, ...rest } = data.skills;
-    dispatch(updateSkills({ ...rest, [trimmed]: items ?? [] }));
+    if (!trimmed || trimmed === oldName) return;
+    const clash = data.skills.some((s) => (s.category || 'Uncategorized') === trimmed);
+    if (clash) return;
+    dispatch(
+      updateSkills(
+        data.skills.map((skill) =>
+          (skill.category || 'Uncategorized') === oldName ? { ...skill, category: trimmed } : skill
+        )
+      )
+    );
   };
 
   const deleteCategory = (category: string) => {
-    const { [category]: _removed, ...rest } = data.skills;
-    dispatch(updateSkills(rest));
+    dispatch(
+      updateSkills(data.skills.filter((skill) => (skill.category || 'Uncategorized') !== category))
+    );
   };
 
   const updateExperience = (id: string, updates: Partial<Experience>) =>
